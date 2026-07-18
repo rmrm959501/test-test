@@ -8435,7 +8435,7 @@ async function doRegister() {
   if(cleanPhone.length !== requiredDigits) {
     const sel = document.getElementById('reg-phone-code');
     const country = sel.options[sel.selectedIndex].getAttribute('data-country') || 'selected country';
-          showMsg('register-msg', country + ' requires exactly ' + requiredDigits + ' digits. You entered ' + cleanPhone.length + '.','error');
+          showMsg('register-msg', country + ' mobile phone numbers requires ' + requiredDigits + ' digits. You entered ' + cleanPhone.length + '.','error');
     return;
   }
       if(!pw)           { showMsg('register-msg','Please create a password.','error'); return; }
