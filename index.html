@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="odyssey-prepaint">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
@@ -13,6 +13,14 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap">
   <style>
+    html.odyssey-prepaint,
+    html.odyssey-prepaint body {
+      background: #F7FAFC !important;
+    }
+    html.odyssey-prepaint body {
+      opacity: 0 !important;
+      visibility: hidden !important;
+    }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root { color-scheme: light; background: #F7FAFC;
       --brand-navy:#1C1C3B; --brand-orange:#ff6200; --brand-orange-2:#e0560f; --brand-orange-lt:#ff7a1f;
@@ -4362,6 +4370,54 @@ button:disabled {
   border-color: var(--ody-blue) !important;
 }
 
+.page-subnav .page-back-btn,
+.profile-back,
+.profile-page-nav .page-back-btn,
+.dp-back {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 0 !important;
+  background: var(--ody-blue) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 12px 22px rgba(42, 92, 170, .24) !important;
+  cursor: pointer !important;
+  transition: transform .22s cubic-bezier(.22,.9,.36,1), box-shadow .22s ease, background .22s ease !important;
+}
+
+.page-subnav .page-back-btn:hover,
+.profile-back:hover,
+.profile-page-nav .page-back-btn:hover,
+.dp-back:hover {
+  transform: translateY(-2px) !important;
+  background: var(--ody-blue-dark) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 16px 28px rgba(42, 92, 170, .30) !important;
+}
+
+.page-subnav .page-back-btn:active,
+.profile-back:active,
+.profile-page-nav .page-back-btn:active,
+.dp-back:active {
+  transform: translateY(0) scale(.97) !important;
+}
+
+.page-subnav .page-back-btn svg,
+.profile-back svg,
+.profile-page-nav .page-back-btn svg,
+.dp-back svg {
+  width: 23px !important;
+  height: 23px !important;
+  stroke: currentColor !important;
+  stroke-width: 3 !important;
+}
+
 .dp-body,
 #dp-wallet .dp-body,
 #dp-transfer .dp-body,
@@ -6398,6 +6454,27 @@ button:disabled {
   }
 }
 </style>
+<script>
+  (function() {
+    var root = document.documentElement;
+    var revealed = false;
+    function revealOdysseyPage() {
+      if (revealed) return;
+      revealed = true;
+      root.classList.remove('odyssey-prepaint');
+      root.classList.add('odyssey-paint-ready');
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() {
+        requestAnimationFrame(revealOdysseyPage);
+      }, { once: true });
+    } else {
+      requestAnimationFrame(revealOdysseyPage);
+    }
+    setTimeout(revealOdysseyPage, 1800);
+  })();
+</script>
+<noscript><style>html.odyssey-prepaint body{opacity:1!important;visibility:visible!important}</style></noscript>
 </head>
 <body class="odyssey-refined-ready">
 
@@ -6537,7 +6614,7 @@ button:disabled {
 
       <!-- Social login buttons hidden - coming soon -->
 
-      <div style="text-align:center;font-size:0.77rem;color:rgba(255,255,255,0.3);">
+      <div style="text-align:center;font-size:0.77rem;color:#101535;">
         No account? <span style="color:#ff6200;cursor:pointer;" onclick="switchTab('register')">Create one free</span>
       </div>
     </div>
@@ -6918,7 +6995,7 @@ button:disabled {
         <span class="btn-spinner"></span>
       </button>
 
-      <div class="reg-full" style="text-align:center;font-size:0.77rem;color:rgba(255,255,255,0.3);">
+      <div class="reg-full" style="text-align:center;font-size:0.77rem;color:#101535;">
         Already have an account? <span style="color:#ff6200;cursor:pointer;" onclick="switchTab('login')">Sign in</span>
       </div>
     </div>
@@ -12412,6 +12489,8 @@ async function renderRewardsJourney() {
       .filter(function(item) { return item.standard < standard; })
       .map(function(item) { return item.standard; })
       .pop() || 0;
+    var previousClaimed = previous > 0 && claimedRewards.indexOf(Number(previous)) !== -1;
+    if (currentProducts === previous && previousClaimed) return 'current';
     if (currentProducts > previous && currentProducts < standard) return 'current';
     return 'locked';
   }
@@ -12424,6 +12503,14 @@ async function renderRewardsJourney() {
     var range = standard - previous;
     var progress = currentProducts - previous;
     return Math.max(0, Math.min(100, Math.round((progress / range) * 100)));
+  }
+
+  function rewardLockIcon() {
+    return '<span class="rp-lock-icon" aria-hidden="true"><svg viewBox="0 0 24 24">'
+      + '<rect x="5.5" y="10.25" width="13" height="9" rx="2.5"></rect>'
+      + '<path d="M8.25 10.25V7.8a3.75 3.75 0 0 1 7.5 0v2.45"></path>'
+      + '<path d="M12 14.2v2.1"></path>'
+      + '</svg></span>';
   }
 
   var currentTarget = milestones.find(function(item) { return currentProducts < item.standard; }) || milestones[milestones.length - 1];
@@ -12453,16 +12540,45 @@ async function renderRewardsJourney() {
   if (statValues[0]) statValues[0].textContent = '$' + formatMoney(earned).replace(/\.00$/, '');
   if (statSubtitles[0]) statSubtitles[0].textContent = claimedCount + ' Rewards Claimed';
 
-  timeline.innerHTML = milestones.map(function(item) {
-    var state = getState(item.standard);
-    var nodeContent = state === 'completed'
-      ? '&#10003;'
-      : (state === 'redeem' ? 'Redeem' : (state === 'current' ? getPercentage(item.standard) + '%' : '&#128274;'));
-    return '<article class="rp-milestone" aria-label="' + item.standard + ' Products, Reward $' + item.amount + ', ' + state + '">'
-      + '<div class="rp-node ' + state + '">' + nodeContent + '</div>'
-      + '<div><div class="rp-milestone-title">' + item.standard + ' Products</div>'
-      + '<div class="rp-milestone-reward">Reward $' + formatMoney(item.amount).replace(/\.00$/, '') + '</div></div>'
-      + '</article>';
+  function getRowFill(rowItems) {
+    if (!rowItems || rowItems.length < 2) return 0;
+    var lastClaimedIndex = -1;
+    rowItems.forEach(function(item, index) {
+      if (claimedRewards.indexOf(Number(item.standard)) !== -1) lastClaimedIndex = index;
+    });
+    if (lastClaimedIndex < 0) return 0;
+    var segmentProgress = Math.min(lastClaimedIndex, rowItems.length - 1);
+    if (lastClaimedIndex < rowItems.length - 1) {
+      var from = rowItems[lastClaimedIndex];
+      var to = rowItems[lastClaimedIndex + 1];
+      if (currentProducts > from.standard && currentProducts < to.standard) {
+        segmentProgress += Math.max(0, Math.min(1, (currentProducts - from.standard) / (to.standard - from.standard)));
+      }
+    }
+    return Math.round((segmentProgress / (rowItems.length - 1)) * 1000) / 10;
+  }
+
+  var rows = [];
+  for (var i = 0; i < milestones.length; i += 4) {
+    rows.push(milestones.slice(i, i + 4));
+  }
+
+  timeline.innerHTML = rows.map(function(rowItems, rowIndex) {
+    var rowFill = getRowFill(rowItems);
+    var rowFillWidth = Math.round((rowFill * 0.75) * 10) / 10;
+    return '<div class="rp-row rp-row-' + (rowIndex + 1) + '" style="--rp-row-fill:' + rowFill + '%;--rp-row-fill-width:' + rowFillWidth + '%;--rp-row-fill-size:' + rowFillWidth + '%">'
+      + rowItems.map(function(item) {
+        var state = getState(item.standard);
+        var nodeContent = state === 'completed'
+          ? '&#10003;'
+          : (state === 'redeem' ? 'Redeem' : (state === 'current' ? getPercentage(item.standard) + '%' : rewardLockIcon()));
+        return '<article class="rp-milestone rp-' + state + '" aria-label="' + item.standard + ' Products, Reward $' + item.amount + ', ' + state + '">'
+          + '<div class="rp-node ' + state + '">' + nodeContent + '</div>'
+          + '<div><div class="rp-milestone-title">' + item.standard + ' Products</div>'
+          + '<div class="rp-milestone-reward">Reward $' + formatMoney(item.amount).replace(/\.00$/, '') + '</div></div>'
+          + '</article>';
+      }).join('')
+      + '</div>';
   }).join('');
 }
 
@@ -13132,13 +13248,13 @@ async function dpLoadTxHistory(silent) {
     if (!list.length) { el.innerHTML = '<div style="text-align:center;padding:40px;color:#64748b">No transfer history yet.</div>'; return; }
     el.innerHTML = '<div style="display:flex;flex-direction:column;gap:10px">' + list.map(function(t){
       var status = String(t.status || 'PENDING').toUpperCase();
-      var statusColor = status === 'COMPLETED' ? '#22d3ee' : status === 'DECLINED' ? '#f87171' : '#fbbf24';
-      var statusBg = status === 'COMPLETED' ? 'rgba(34,211,238,.12)' : status === 'DECLINED' ? 'rgba(248,113,113,.12)' : 'rgba(251,191,36,.12)';
+      var statusColor = status === 'COMPLETED' ? '#22c55e' : status === 'DECLINED' ? '#ef4444' : '#d69a22';
+      var statusBg = status === 'COMPLETED' ? '#DCFCE7' : status === 'DECLINED' ? '#FFE4E6' : '#FEF3C7';
       var color = t.type === 'WITHDRAWAL' ? '#f87171' : '#4ade80';
       var sign  = t.type === 'WITHDRAWAL' ? '-' : '+';
-      return '<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center">'
+      return '<div class="txh-record txh-status-' + txHistoryEscape(status.toLowerCase()) + '" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center">'
         + '<div style="min-width:0"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><div style="font-size:14px;font-weight:600;color:#e2e8f0">' + (t.type || 'Transfer') + '</div>'
-        + '<span style="font-size:11px;font-weight:700;color:'+statusColor+';background:'+statusBg+';border:1px solid '+statusColor+';border-radius:20px;padding:2px 8px">' + status.charAt(0) + status.slice(1).toLowerCase() + '</span></div>'
+        + '<span style="font-size:11px;font-weight:700;color:#101535;background:'+statusBg+';border:1px solid '+statusColor+';border-radius:20px;padding:2px 8px">' + status.charAt(0) + status.slice(1).toLowerCase() + '</span></div>'
         + '<div style="font-size:12px;color:#64748b;margin-top:4px">' + (t.createdAt ? new Date(t.createdAt).toLocaleString() : '&mdash;') + '</div>'
         + (status === 'DECLINED' && t.rejectionReason ? '<div style="font-size:12px;color:#f87171;margin-top:6px;white-space:normal;word-break:break-word">Reason: ' + txHistoryEscape(t.rejectionReason) + '</div>' : '') + '</div>'
         + '<div style="font-size:16px;font-weight:700;color:'+color+';margin-left:12px;white-space:nowrap">' + sign + '$' + formatMoney(t.amount||0) + '</div></div>';
@@ -13223,11 +13339,26 @@ function notificationTypeFromAdminAction(action) {
   if (raw.indexOf('NOTIFICATION_') !== 0) return '';
   var type = raw.replace('NOTIFICATION_', '').toLowerCase();
   if (type === 'withdrawal') return 'withdraw';
+  if (
+    type === 'account_disabled'
+    || type === 'account_banned'
+    || type === 'account_suspended'
+    || type === 'account_inactive'
+    || type === 'disabled'
+    || type === 'banned'
+    || type === 'suspended'
+    || type === 'inactive'
+  ) return 'account-disabled';
   if (type === 'prize' || type === 'prize_pool') return 'bonus';
   if (type === 'register' || type === 'register_reward') return 'registration';
   if (type === 'reward_dispatch') return 'reward';
   if (type === 'balance_add' || type === 'topup' || type === 'credit') return 'deposit';
-  return ['deposit','withdraw','bonus','registration','reward','login'].indexOf(type) !== -1 ? type : 'deposit';
+  return ['deposit','withdraw','bonus','registration','reward','login','account-disabled'].indexOf(type) !== -1 ? type : 'deposit';
+}
+function isAccountDisabledNotificationText() {
+  var text = Array.prototype.slice.call(arguments).join(' ').toLowerCase();
+  return /\b(account|user)\b/.test(text)
+    && /\b(disabled|banned|suspended|inactive|deactivated|blocked)\b/.test(text);
 }
 function notificationTitleFallback(type) {
   return {
@@ -13236,7 +13367,8 @@ function notificationTitleFallback(type) {
     bonus: 'Prize Pool Bonus',
         registration: 'New Registration Reward',
         reward: 'Reward Claimed',
-    login: 'Account Login'
+    login: 'Account Login',
+    'account-disabled': 'Account Disabled'
   }[type] || 'Notification';
 }
 function notificationFromAdminLog(log) {
@@ -13247,6 +13379,9 @@ function notificationFromAdminLog(log) {
   var rawTime = notificationRawTimeFromItem(log);
   var title = notificationFieldFromText(details, 'Title') || notificationTitleFallback(type);
   var desc = notificationFieldFromText(details, 'Message') || title;
+  if (isAccountDisabledNotificationText(action, details, title, desc)) {
+    type = 'account-disabled';
+  }
   var amount = notificationFieldFromText(details, 'Amount');
   if (amount && desc.indexOf(amount) === -1 && type !== 'login') {
     desc += ' · ' + amount;
@@ -13298,14 +13433,31 @@ function notificationRawTimeFromItem(item) {
 function notificationTimeValue(item) {
   return Date.parse(item.rawTime || item.createdAt || item.submittedAt || item.assignedAt || item.time || 0) || 0;
 }
+function normalizeNotificationVisualType(type) {
+  var value = String(type || 'deposit').toLowerCase().replace(/_/g, '-');
+  if (value === 'withdrawal') return 'withdraw';
+  if (
+    value === 'account-disabled'
+    || value === 'account-banned'
+    || value === 'account-suspended'
+    || value === 'account-inactive'
+    || value === 'disabled'
+    || value === 'banned'
+    || value === 'suspended'
+    || value === 'inactive'
+  ) return 'account-disabled';
+  return value || 'deposit';
+}
 function notificationIcon(type) {
+  type = normalizeNotificationVisualType(type);
   var icons = {
     deposit: '<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M7 10h10"/><path d="M8 15h4"/><path d="M17 15h.01"/></svg>',
     withdraw: '<svg viewBox="0 0 24 24"><path d="M5 7h14"/><path d="M5 7l2 12h10l2-12"/><path d="M9 7a3 3 0 0 1 6 0"/><path d="M12 11v5"/><path d="m9.8 13.8 2.2 2.2 2.2-2.2"/></svg>',
     bonus: '<svg viewBox="0 0 24 24"><path d="M20 12v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5A2.5 2.5 0 1 1 10 4.5C10 6 12 7 12 7z"/><path d="M12 7h4.5A2.5 2.5 0 1 0 14 4.5C14 6 12 7 12 7z"/></svg>',
     login: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/><path d="M18 10l3 3-3 3"/><path d="M14 13h7"/></svg>',
     registration: '<svg viewBox="0 0 24 24"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.3 7.2 18l.9-5.4-3.9-3.8 5.4-.8L12 3z"/><path d="M20 21H4"/></svg>',
-    reward: '<svg viewBox="0 0 24 24"><path d="M20 12v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/></svg>'
+    reward: '<svg viewBox="0 0 24 24"><path d="M20 12v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/></svg>',
+    'account-disabled': '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v6"/><path d="M12 17h.01"/></svg>'
   };
   return icons[type] || icons.deposit;
 }
@@ -13315,8 +13467,10 @@ function notificationDisplayTime(raw) {
   return date.toLocaleString();
 }
 function notificationCard(item) {
-  return '<div class="notif-card">'
-    + '<div class="notif-icon ' + txHistoryEscape(item.type || '') + '">' + notificationIcon(item.type) + '</div>'
+  var visualType = normalizeNotificationVisualType(item.type);
+  var typeClass = visualType.replace(/[^a-z0-9_-]/g, '') || 'deposit';
+  return '<div class="notif-card notif-type-' + txHistoryEscape(typeClass) + '">'
+    + '<div class="notif-icon ' + txHistoryEscape(typeClass) + '">' + notificationIcon(visualType) + '</div>'
     + '<div class="notif-main">'
     + '<div class="notif-title">' + txHistoryEscape(item.title) + '</div>'
     + '<div class="notif-desc">' + txHistoryEscape(item.desc) + '</div>'
@@ -14007,6 +14161,15 @@ function closeJackpot() {
   box-shadow: none !important;
 }
 
+#login-btn,
+#register-btn,
+.welcome-close-btn {
+  font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0 !important;
+}
+
 .tx-field input {
   color: var(--ops-ink) !important;
 }
@@ -14098,8 +14261,8 @@ function closeJackpot() {
 
 .event-card::before {
   background: var(--ec, var(--ops-blue-2)) !important;
-  opacity: .12 !important;
-  filter: blur(74px) !important;
+  opacity: .26 !important;
+  filter: blur(64px) !important;
 }
 
 .event-card small {
@@ -14116,9 +14279,9 @@ function closeJackpot() {
 }
 
 .event-crown {
-  background: linear-gradient(135deg, #FFFFFF, #EEF5FF) !important;
-  border-color: var(--ops-line) !important;
-  box-shadow: 0 12px 26px rgba(42, 92, 170, .08) !important;
+  background: #2B3038 !important;
+  border-color: #3A414C !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08) !important;
 }
 
 .event-divider {
@@ -14236,6 +14399,271 @@ function closeJackpot() {
   box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 12px 24px rgba(28,28,59,.07) !important;
 }
 
+.rewards-journey {
+  --rp-status-gray: #2B3038 !important;
+  --rp-status-gray-2: #3A414C !important;
+  --rp-track-blue: #DCE8FB !important;
+  --rp-track-orange: #FF6200 !important;
+  --rp-track-gold: #F2B65C !important;
+  --rp-locked-bg: #EEF2F7 !important;
+  --rp-locked-border: #D8E0EC !important;
+  --rp-locked-icon: #8B97A8 !important;
+}
+
+.rp-timeline {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 38px !important;
+}
+
+.rp-timeline::before,
+.rp-timeline::after {
+  display: none !important;
+  content: none !important;
+}
+
+.rp-row {
+  position: relative !important;
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 18px !important;
+  padding-top: 8px !important;
+}
+
+.rp-row::before,
+.rp-row::after {
+  content: "" !important;
+  position: absolute !important;
+  left: 12.5% !important;
+  top: 50px !important;
+  height: 5px !important;
+  border-radius: 999px !important;
+  pointer-events: none !important;
+}
+
+.rp-row::before {
+  right: 12.5% !important;
+  background: linear-gradient(90deg, rgba(46, 126, 246, .92), rgba(46, 126, 246, .70) 82%, rgba(46, 126, 246, .16)) !important;
+  box-shadow: 0 0 14px rgba(46,126,246,.24) !important;
+  z-index: 0 !important;
+}
+
+.rp-row:not(:last-child)::before {
+  right: 0 !important;
+}
+
+.rp-row:not(:first-child)::before {
+  left: 0 !important;
+}
+
+.rp-row::after {
+  width: var(--rp-row-fill-width, 0%) !important;
+  background:
+    linear-gradient(90deg, #FF980D 0%, #FF980D 72%, #F2B65C 84%, rgba(242,182,92,.48) 94%, rgba(84,138,240,.10) 100%) !important;
+  box-shadow: 0 0 18px rgba(255,152,13,.34), 0 0 15px rgba(242,182,92,.20) !important;
+  z-index: 1 !important;
+}
+
+.rp-row .rp-milestone {
+  z-index: 2 !important;
+}
+
+.rp-node.completed,
+.rp-node.current,
+.rp-node.redeem {
+  color: #FFFFFF !important;
+  background: radial-gradient(circle at 35% 24%, #4A5260, var(--rp-status-gray) 58%, #171B22 100%) !important;
+  border: 1px solid var(--rp-status-gray-2) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 18px 34px rgba(16,21,53,.16) !important;
+}
+
+.rp-node.completed {
+  color: #FFFFFF !important;
+  background:
+    radial-gradient(circle at 50% 50%, #153B9A 0%, #102A78 54%, transparent 55%),
+    radial-gradient(circle at 50% 50%, #FFD17A 57%, #FF9D18 73%, #F28B08 100%) !important;
+  border-color: rgba(255,152,13,.82) !important;
+  animation: none !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.20),
+    0 0 0 2px rgba(255,183,64,.82),
+    0 0 0 8px rgba(255,152,13,.16),
+    0 0 34px rgba(255,152,13,.48),
+    0 16px 34px rgba(16,21,53,.18) !important;
+  text-shadow: 0 1px 0 rgba(0,0,0,.25) !important;
+}
+
+.rp-node.current {
+  color: #FFFFFF !important;
+  background:
+    radial-gradient(circle at 50% 50%, #2E7EF6 0%, #246DE8 58%, transparent 59%),
+    radial-gradient(circle at 50% 50%, rgba(188,224,255,.96) 61%, rgba(139,198,255,.70) 78%, rgba(139,198,255,.26) 100%) !important;
+  border-color: rgba(139,198,255,.70) !important;
+  animation: none !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.20),
+    0 0 0 2px rgba(158,213,255,.75),
+    0 0 0 9px rgba(84,138,240,.16),
+    0 0 34px rgba(84,138,240,.42),
+    0 16px 34px rgba(16,21,53,.18) !important;
+  font-size: 21px !important;
+}
+
+.rp-node.redeem {
+  color: #FFFFFF !important;
+  background:
+    radial-gradient(circle at 34% 24%, #FFE0B8 0%, #FF9A33 42%, #FF6200 74%, #C64E00 100%) !important;
+  border-color: rgba(255,98,0,.66) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.16),
+    0 0 0 8px rgba(255,98,0,.12),
+    0 0 32px rgba(255,98,0,.34),
+    0 16px 34px rgba(16,21,53,.18) !important;
+  font-size: 12px !important;
+  letter-spacing: 0 !important;
+}
+
+.rp-node.locked {
+  color: var(--rp-locked-icon) !important;
+  background: linear-gradient(145deg, #F8FAFD 0%, var(--rp-locked-bg) 58%, #E2E8F1 100%) !important;
+  border: 1px solid var(--rp-locked-border) !important;
+  opacity: 1 !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.92),
+    0 0 0 7px rgba(139,151,168,.08),
+    0 14px 26px rgba(16,21,53,.08) !important;
+}
+
+.rp-lock-icon {
+  display: inline-grid !important;
+  place-items: center !important;
+  width: 30px !important;
+  height: 30px !important;
+}
+
+.rp-lock-icon svg {
+  width: 26px !important;
+  height: 26px !important;
+  fill: none !important;
+  stroke: var(--rp-locked-icon) !important;
+  stroke-width: 2.2 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+
+.rp-milestone.rp-completed .rp-milestone-title,
+.rp-milestone.rp-current .rp-milestone-title,
+.rp-milestone.rp-locked .rp-milestone-title {
+  color: var(--ops-navy) !important;
+}
+
+.rp-milestone.rp-locked .rp-milestone-reward {
+  color: var(--ops-muted) !important;
+}
+
+@keyframes rpClaimedGlow {
+  0%, 100% {
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.16),
+      0 0 0 9px rgba(255,98,0,.14),
+      0 0 34px rgba(255,98,0,.38),
+      0 16px 34px rgba(16,21,53,.18);
+  }
+  50% {
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.16),
+      0 0 0 13px rgba(255,98,0,.21),
+      0 0 50px rgba(255,98,0,.56),
+      0 18px 38px rgba(16,21,53,.20);
+  }
+}
+
+@keyframes rpCurrentPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.16),
+      0 0 0 9px rgba(84,138,240,.20),
+      0 0 34px rgba(84,138,240,.42),
+      0 16px 34px rgba(16,21,53,.18);
+  }
+  50% {
+    transform: scale(1.035);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.16),
+      0 0 0 14px rgba(84,138,240,.26),
+      0 0 52px rgba(84,138,240,.58),
+      0 18px 38px rgba(16,21,53,.20);
+  }
+}
+
+@media (max-width: 760px) {
+  .rp-timeline {
+    position: relative !important;
+  }
+
+  .rp-timeline::before {
+    content: "" !important;
+    display: block !important;
+    position: absolute !important;
+    left: 42px !important;
+    top: 42px !important;
+    bottom: 42px !important;
+    width: 5px !important;
+    height: auto !important;
+    right: auto !important;
+    border-radius: 999px !important;
+    pointer-events: none !important;
+    background: linear-gradient(180deg, rgba(46, 126, 246, .92), rgba(46, 126, 246, .72) 86%, rgba(46, 126, 246, .18)) !important;
+    box-shadow: 0 0 14px rgba(46,126,246,.24) !important;
+    z-index: 0 !important;
+  }
+
+  .rp-timeline::after {
+    display: none !important;
+    content: none !important;
+  }
+
+  .rp-row {
+    grid-template-columns: 1fr !important;
+    gap: 26px !important;
+    padding-top: 0 !important;
+  }
+
+  .rp-row::before,
+  .rp-row::after {
+    left: 42px !important;
+    right: auto !important;
+    top: 42px !important;
+    width: 5px !important;
+    border-radius: 999px !important;
+  }
+
+  .rp-row::before {
+    display: none !important;
+    content: none !important;
+  }
+
+  .rp-row:not(:first-child)::before {
+    left: 42px !important;
+  }
+
+  .rp-row:not(:last-child)::before {
+    right: auto !important;
+  }
+
+  .rp-row::after {
+    height: var(--rp-row-fill-size, 0%) !important;
+  }
+
+  .rp-row .rp-milestone {
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+    text-align: left !important;
+    gap: 18px !important;
+  }
+}
+
 /* Notifications: information center instead of dark feed */
 .notif-shell {
   padding: 22px !important;
@@ -14261,6 +14689,19 @@ function closeJackpot() {
   background: #FFFFFF !important;
   border: 1px solid var(--ops-line) !important;
   box-shadow: 0 12px 28px rgba(28, 28, 59, .06) !important;
+  --notif-accent: var(--ops-blue-2);
+  overflow: hidden !important;
+}
+
+.notif-card::before {
+  content: "" !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 14px !important;
+  bottom: 14px !important;
+  width: 4px !important;
+  border-radius: 0 999px 999px 0 !important;
+  background: var(--notif-accent) !important;
 }
 
 .notif-card:hover {
@@ -14292,11 +14733,21 @@ function closeJackpot() {
   box-shadow: 0 10px 22px rgba(42, 92, 170, .09) !important;
 }
 
-.notif-icon.withdraw { color: var(--ops-blue) !important; background: #EAF2FF !important; border-color: var(--ops-line-2) !important; }
+.notif-icon.withdraw,
+.notif-icon.withdrawal { color: var(--ops-green) !important; background: #EAF8F1 !important; border-color: #CBEBDC !important; }
 .notif-icon.login { color: #7357D7 !important; background: #F1EDFF !important; border-color: #DCD3FF !important; }
 .notif-icon.bonus { color: var(--ops-amber) !important; background: #FFF7E8 !important; border-color: #F4DEB8 !important; }
 .notif-icon.registration,
 .notif-icon.reward { color: var(--ops-green) !important; background: #EAF8F1 !important; border-color: #CBEBDC !important; }
+.notif-icon.account-disabled { color: var(--ops-red) !important; background: #FFF0F0 !important; border-color: #FFD0D0 !important; }
+.notif-type-deposit { --notif-accent: var(--ops-blue-2); }
+.notif-type-withdraw,
+.notif-type-withdrawal { --notif-accent: var(--ops-green); }
+.notif-type-bonus { --notif-accent: var(--ops-green); }
+.notif-type-login { --notif-accent: #D69A22; }
+.notif-type-registration { --notif-accent: #7357D7; }
+.notif-type-reward { --notif-accent: var(--ops-green); }
+.notif-type-account-disabled { --notif-accent: var(--ops-red); }
 
 .notif-empty {
   background: #FFFFFF !important;
@@ -14314,6 +14765,14 @@ function closeJackpot() {
   border: 1px solid var(--ops-line) !important;
   color: var(--ops-blue) !important;
   box-shadow: 0 8px 18px rgba(28,28,59,.045) !important;
+  transition: transform .22s cubic-bezier(.22,.9,.36,1), border-color .22s ease, box-shadow .22s ease, background .18s ease, color .18s ease !important;
+  will-change: transform;
+}
+
+.faq-tab:hover {
+  transform: translateY(-2px) !important;
+  border-color: var(--ops-line-2) !important;
+  box-shadow: 0 14px 26px rgba(28,28,59,.08) !important;
 }
 
 .faq-tab.active {
@@ -14331,11 +14790,14 @@ function closeJackpot() {
   border: 1px solid var(--ops-line) !important;
   border-radius: 18px !important;
   box-shadow: 0 12px 28px rgba(28,28,59,.055) !important;
+  transition: transform .22s cubic-bezier(.22,.9,.36,1), border-color .22s ease, box-shadow .22s ease !important;
+  will-change: transform;
 }
 
 .faq-item:hover {
   border-color: var(--ops-line-2) !important;
   box-shadow: 0 18px 40px rgba(28,28,59,.08) !important;
+  transform: translateY(-2px) !important;
 }
 
 .faq-item summary {
@@ -14402,6 +14864,47 @@ function closeJackpot() {
   border: 1px solid var(--ops-line) !important;
   border-radius: 18px !important;
   box-shadow: 0 12px 28px rgba(28,28,59,.055) !important;
+  position: relative !important;
+  overflow: hidden !important;
+  --txh-accent: var(--ops-blue-2);
+}
+
+#txh-list > div > div::before,
+#txh-list [style*="background:rgba(255,255,255,.04)"]::before {
+  content: "" !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 12px !important;
+  bottom: 12px !important;
+  width: 4px !important;
+  border-radius: 0 999px 999px 0 !important;
+  background: var(--txh-accent) !important;
+}
+
+#txh-list > div > div:has([style*="#f87171"]) {
+  --txh-accent: var(--ops-red);
+}
+
+#txh-list > div > div:has([style*="#4ade80"]),
+#txh-list > div > div:has([style*="#22c55e"]) {
+  --txh-accent: var(--ops-green);
+}
+
+#txh-list > div > div:has([style*="#fbbf24"]) {
+  --txh-accent: #D69A22;
+}
+
+#txh-list .txh-status-completed {
+  --txh-accent: var(--ops-green) !important;
+}
+
+#txh-list .txh-status-declined {
+  --txh-accent: var(--ops-red) !important;
+}
+
+#txh-list .txh-status-pending,
+#txh-list .txh-status-processing {
+  --txh-accent: #D69A22 !important;
 }
 
 #txh-list [style*="color:#e2e8f0"] {
@@ -14469,6 +14972,27 @@ function closeJackpot() {
   .event-card {
     min-height: 220px !important;
     padding: 24px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-subnav .page-back-btn,
+  .profile-back,
+  .profile-page-nav .page-back-btn,
+  .dp-back,
+  .faq-tab,
+  .faq-item {
+    transition: border-color .18s ease, box-shadow .18s ease !important;
+    will-change: auto;
+  }
+
+  .page-subnav .page-back-btn:hover,
+  .profile-back:hover,
+  .profile-page-nav .page-back-btn:hover,
+  .dp-back:hover,
+  .faq-tab:hover,
+  .faq-item:hover {
+    transform: none !important;
   }
 }
 </style>
