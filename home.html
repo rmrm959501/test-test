@@ -1785,6 +1785,12 @@ More Information:
     var btn=wrap.querySelector('button');
     var tracker=wrap.querySelector('.tracker');
     var CIRC=307.919;
+    wrap.style.pointerEvents='auto';
+    wrap.style.zIndex='2147483000';
+    if(btn){
+      btn.type='button';
+      btn.style.pointerEvents='auto';
+    }
     if(tracker){tracker.style.transition='stroke-dashoffset 120ms linear';tracker.style.strokeDasharray=CIRC+','+CIRC;}
     function onScroll(){
       var st=window.pageYOffset||document.documentElement.scrollTop||0;
@@ -1792,7 +1798,36 @@ More Information:
       var p=Math.max(0,Math.min(1,st/max));
       if(tracker) tracker.style.strokeDashoffset=(CIRC*(1-p)).toFixed(2);
     }
-    if(btn) btn.addEventListener('click',function(e){e.preventDefault();window.scrollTo({top:0,behavior:'smooth'});});
+    function scrollToTop(e){
+      if(e){
+        e.preventDefault();
+        e.stopPropagation();
+        if(e.stopImmediatePropagation) e.stopImmediatePropagation();
+      }
+      try{window.scrollTo({top:0,behavior:'smooth'});}catch(err){window.scrollTo(0,0);}
+      try{
+        var root=document.scrollingElement||document.documentElement||document.body;
+        if(root&&root.scrollTo) root.scrollTo({top:0,behavior:'smooth'});
+        else if(root) root.scrollTop=0;
+      }catch(err){}
+      try{
+        if(window.parent&&window.parent!==window&&window.parent.scrollTo){
+          window.parent.scrollTo({top:0,behavior:'smooth'});
+        }
+      }catch(err){}
+    }
+    function maybeScrollToTop(e){
+      var target=e.target&&e.target.closest?e.target.closest('.bde-back-to-top,.bde-back-to-top__button'):null;
+      if(target) scrollToTop(e);
+    }
+    if(btn){
+      btn.addEventListener('pointerdown',scrollToTop,true);
+      btn.addEventListener('click',scrollToTop,true);
+      btn.addEventListener('touchend',scrollToTop,true);
+    }
+    document.addEventListener('pointerdown',maybeScrollToTop,true);
+    document.addEventListener('click',maybeScrollToTop,true);
+    document.addEventListener('touchend',maybeScrollToTop,true);
     window.addEventListener('scroll',onScroll,{passive:true});
     onScroll();
   }
@@ -1840,6 +1875,11 @@ More Information:
 
 /* hide reCAPTCHA floating badge */
 .grecaptcha-badge{display:none!important;}
+/* keep the back-to-top control above cloned widgets and clickable */
+.bde-back-to-top,
+.bde-back-to-top *{pointer-events:auto!important;}
+.bde-back-to-top{z-index:2147483000!important;}
+.bde-back-to-top__button{cursor:pointer!important;}
 /* submit success banner (matches original green style) */
 .clone-form-success{display:flex;align-items:center;justify-content:space-between;gap:16px;background:#e9fbf0;border:1px solid #bbeccd;color:#158049;border-radius:10px;padding:16px 22px;margin:6px 0 10px;font-size:15px;line-height:1.55;}
 .clone-form-success span{flex:1;}
