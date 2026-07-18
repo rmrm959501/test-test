@@ -10896,6 +10896,12 @@ function configureHomeIframeInteractions(iframe) {
     hideLogoStyle.textContent = '.navbar_logo-wrapper,.navbar_logo{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;}';
     homeDoc.head.appendChild(hideLogoStyle);
   }
+  if (!homeDoc.getElementById('uptic-allow-home-contact-form')) {
+    var contactFormStyle = homeDoc.createElement('style');
+    contactFormStyle.id = 'uptic-allow-home-contact-form';
+    contactFormStyle.textContent = '#contact-form100,#contact-form100 *,.clone-form-success,.clone-form-success *{pointer-events:auto!important;}#contact-form100 button[type="submit"],#contact-form100 .breakdance-form-button__submit{cursor:pointer!important;}';
+    homeDoc.head.appendChild(contactFormStyle);
+  }
 
   var interactiveSelector = 'a, button, [role="button"], [role="link"], [onclick]';
   var carouselControlSelector = [
@@ -10944,6 +10950,10 @@ function configureHomeIframeInteractions(iframe) {
     ) return candidate;
     return null;
   }
+  function isHomeContactFormControl(node) {
+    if (!node || !node.closest) return null;
+    return node.closest('#contact-form100, #contact-form100 input, #contact-form100 textarea, #contact-form100 select, #contact-form100 label, #contact-form100 button, #contact-form100 [role="button"], .clone-form-success, .clone-form-success__x');
+  }
   var backToTopWrap = homeDoc.querySelector('.bde-back-to-top');
   if (backToTopWrap) {
     backToTopWrap.style.pointerEvents = 'auto';
@@ -10954,15 +10964,18 @@ function configureHomeIframeInteractions(iframe) {
       control.style.pointerEvents = 'auto';
       control.style.cursor = 'pointer';
       control.removeAttribute('aria-disabled');
+      control.removeAttribute('tabindex');
     });
   } catch (error) {}
   homeDoc.querySelectorAll(interactiveSelector).forEach(function(control) {
     var isBackToTop = !!(control.closest && control.closest('.bde-back-to-top,.bde-back-to-top__button,.js-ee-back-to-top'));
     var isCarouselNav = !!isHomeCarouselControl(control);
-    if (isBackToTop || isCarouselNav) {
+    var isContactForm = !!isHomeContactFormControl(control);
+    if (isBackToTop || isCarouselNav || isContactForm) {
       control.style.pointerEvents = 'auto';
       control.style.cursor = 'pointer';
       control.removeAttribute('aria-disabled');
+      control.removeAttribute('tabindex');
       return;
     }
     var label = String(control.textContent || '').replace(/\s+/g, ' ').trim();
@@ -10972,6 +10985,7 @@ function configureHomeIframeInteractions(iframe) {
       control.style.pointerEvents = 'auto';
       control.style.cursor = 'pointer';
       control.removeAttribute('aria-disabled');
+      control.removeAttribute('tabindex');
       return;
     }
     control.style.pointerEvents = 'none';
@@ -11005,6 +11019,8 @@ function configureHomeIframeInteractions(iframe) {
     var path = event.composedPath ? event.composedPath() : [];
     var carouselNav = event.target && event.target.closest ? isHomeCarouselControl(event.target) : null;
     if (carouselNav) return;
+    var contactFormControl = event.target && event.target.closest ? isHomeContactFormControl(event.target) : null;
+    if (contactFormControl) return;
     var pathElements = path.filter(function(node) { return node && node.nodeType === 1; });
     var pathText = pathElements.map(function(node) {
       return String(node.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
@@ -11036,6 +11052,16 @@ function configureHomeIframeInteractions(iframe) {
   }, true);
 }
 
+function queueHomeIframeInteractionSync(iframe) {
+  if (!iframe) return;
+  configureHomeIframeInteractions(iframe);
+  [60, 220, 600, 1200].forEach(function(delay) {
+    window.setTimeout(function() {
+      configureHomeIframeInteractions(iframe);
+    }, delay);
+  });
+}
+
 function syncHomeBrandIntoHeader() {
   var outerHeader = document.querySelector('.content-box > .top-for-header-div-1');
   var outerSpacer = document.querySelector('.content-box > .spacer');
@@ -11049,7 +11075,7 @@ function syncHomeBrandIntoHeader() {
   if (iframe) {
     iframe.style.height = '100dvh';
     iframe.style.minHeight = '100dvh';
-    configureHomeIframeInteractions(iframe);
+    queueHomeIframeInteractionSync(iframe);
   }
 }
 
