@@ -2027,11 +2027,8 @@ More Information:
   if(document.readyState!=='loading') boot(); else document.addEventListener('DOMContentLoaded',boot);
 })();
 
-/* Keep earlier rule: any <a> that would navigate is neutralised (sliders/arrows are <div>/<span>, unaffected) */
-(function(){
-  document.addEventListener('click',function(e){var a=e.target.closest('a');if(a){e.preventDefault();}},true);
-  document.addEventListener('submit',function(e){e.preventDefault();},true);
-})();
+/* Static clone: keep normal links clickable after deployment.
+   The carousel already prevents accidental link clicks during drag gestures. */
 </script>
 
 <style id="push-footer-right">
