@@ -1008,6 +1008,13 @@
       overflow: auto;
       overscroll-behavior: contain;
       -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .iframe-section::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+      display: none;
     }
 
     /* ===== MODAL ===== */
@@ -10901,6 +10908,12 @@ function configureHomeIframeInteractions(iframe) {
     contactFormStyle.id = 'uptic-allow-home-contact-form';
     contactFormStyle.textContent = '#contact-form100,#contact-form100 *,.clone-form-success,.clone-form-success *{pointer-events:auto!important;}#contact-form100 button[type="submit"],#contact-form100 .breakdance-form-button__submit{cursor:pointer!important;}';
     homeDoc.head.appendChild(contactFormStyle);
+  }
+  if (!homeDoc.getElementById('uptic-hide-home-scrollbars')) {
+    var homeScrollbarStyle = homeDoc.createElement('style');
+    homeScrollbarStyle.id = 'uptic-hide-home-scrollbars';
+    homeScrollbarStyle.textContent = 'html,body{scrollbar-width:none!important;-ms-overflow-style:none!important;}html::-webkit-scrollbar,body::-webkit-scrollbar{width:0!important;height:0!important;display:none!important;}';
+    homeDoc.head.appendChild(homeScrollbarStyle);
   }
 
   var interactiveSelector = 'a, button, [role="button"], [role="link"], [onclick]';
