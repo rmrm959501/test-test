@@ -272,7 +272,7 @@
       font-size: 0.78rem; font-weight: 700; color: #fff;
       overflow: hidden;
     }
-    .user-avatar img, .profile-avatar-big img {
+    .user-avatar img, .profile-avatar-big img, .welcome-avatar-big img {
       width: 100%; height: 100%; object-fit: cover; display: block;
     }
     .logout-btn {
@@ -1306,6 +1306,9 @@
       transition: background 0.18s, color 0.18s;
     }
     .modal-close:hover { background: rgba(255,255,255,0.14); color: #fff; }
+    .modal-card.welcome-mode .modal-close {
+      display: none !important;
+    }
 
     .forgot-link {
       text-align: right; font-size: 0.76rem;
@@ -3874,8 +3877,17 @@
       display: flex; justify-content: space-between; align-items: center;
       margin-bottom: 0;
     }
-    .profile-uid-lbl { font-size: 0.72rem; color: rgba(255,255,255,0.35); }
-    .profile-uid-val { font-size: 0.9rem; font-weight: 700; color: #fff; letter-spacing: 0.08em; }
+    .profile-uid-lbl {
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 0.72rem; font-weight: 900; color: #2A5CAA;
+      margin-right: 0.5rem; line-height: 1; letter-spacing: .04em;
+      padding: .28rem .48rem; border-radius: 999px;
+      background: #EEF5FF; border: 1px solid #C8DAF6;
+    }
+    .profile-uid-val {
+      font-size: 0.96rem; font-weight: 800; color: #050816;
+      letter-spacing: 0.02em; line-height: 1; white-space: nowrap;
+    }
     .profile-uid-copy {
       background: rgba(255,98,0,0.1); border: 1px solid rgba(255,98,0,0.25);
       border-radius: 9px; color: #ff6200; font-size: 0;
@@ -3887,42 +3899,7 @@
     }
     .profile-uid-copy:hover { background: rgba(255,98,0,0.2); }
 
-    /* Credit score minimal line */
-    .credit-wrap {
-      --credit-color: #fff;
-      display: flex;
-      align-items: center;
-      gap: .7rem;
-      width: 100%;
-      background: rgba(255,255,255,0.035);
-      border: 1px solid rgba(255,255,255,0.07);
-      border-radius: 14px;
-      padding: .78rem .9rem;
-      margin-bottom: 0;
-      color: rgba(255,255,255,.92);
-    }
-    .credit-label {
-      font-size: .82rem;
-      font-weight: 650;
-      white-space: nowrap;
-    }
-    .credit-line {
-      flex: 1;
-      min-width: 76px;
-      height: 2px;
-      border-radius: 999px;
-      background: var(--credit-color);
-      box-shadow: 0 0 10px color-mix(in srgb, var(--credit-color) 72%, transparent);
-      opacity: .96;
-    }
-    .credit-percent {
-      color: var(--credit-color);
-      font-size: .78rem;
-      font-weight: 800;
-      white-space: nowrap;
-      text-shadow: 0 0 10px color-mix(in srgb, var(--credit-color) 70%, transparent);
-    }
-    .drawer-credit-wrap { margin-top: .8rem; }
+    /* Credit score meter is defined once in the Odyssey refinement layer below. */
 
     /* Edit section */
     .profile-section-title {
@@ -4671,11 +4648,79 @@ button:disabled {
 }
 
 .credit-wrap {
-  color: var(--ody-text) !important;
+  --credit-color: #548AF0;
+  --credit-score: 100%;
+  --credit-glow: rgba(84, 138, 240, .22);
+  --credit-soft: rgba(84, 138, 240, .08);
+  --credit-border: #BDD3FF;
+  --credit-track: #DDE7F5;
+  display: flex !important;
+  align-items: center !important;
+  gap: .72rem !important;
+  width: 100% !important;
+  min-height: 44px !important;
+  margin-bottom: 0 !important;
+  padding: .72rem .86rem !important;
+  background:
+    radial-gradient(circle at 86% 50%, var(--credit-soft), transparent 62%),
+    linear-gradient(135deg, rgba(255,255,255,.98), rgba(246,250,255,.96)) !important;
+  border: 1px solid var(--credit-border) !important;
+  border-radius: 14px !important;
+  color: #050816 !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.96),
+    0 10px 24px var(--credit-glow) !important;
+  transition: background .22s ease, border-color .22s ease, box-shadow .22s ease;
+}
+
+.drawer-credit-wrap {
+  margin-top: .72rem !important;
+}
+
+.credit-label {
+  color: #050816 !important;
+  -webkit-text-fill-color: #050816 !important;
+  font-size: .82rem !important;
+  font-weight: 800 !important;
+  white-space: nowrap !important;
 }
 
 .credit-line {
-  background: var(--ody-border) !important;
+  flex: 1 1 auto !important;
+  min-width: 74px !important;
+  height: 2px !important;
+  border-radius: 999px !important;
+  background:
+    linear-gradient(90deg, var(--credit-color) 0 var(--credit-score), var(--credit-track) var(--credit-score) 100%) !important;
+  box-shadow: 0 0 14px var(--credit-glow) !important;
+  transition: background .24s ease, box-shadow .24s ease;
+}
+
+.credit-percent {
+  color: #050816 !important;
+  -webkit-text-fill-color: #050816 !important;
+  font-size: .78rem !important;
+  font-weight: 900 !important;
+  white-space: nowrap !important;
+  text-shadow: none !important;
+}
+
+#profile-page .profile-section-title,
+#profile-page .profile-input-group label {
+  color: #050816 !important;
+  -webkit-text-fill-color: #050816 !important;
+}
+
+#profile-page .profile-input-group input {
+  color: #050816 !important;
+  -webkit-text-fill-color: #050816 !important;
+  caret-color: #050816 !important;
+}
+
+#profile-page .profile-input-group input::placeholder {
+  color: #5B6680 !important;
+  -webkit-text-fill-color: #5B6680 !important;
+  opacity: 1 !important;
 }
 
 /* Auth modal and feedback */
@@ -4855,6 +4900,113 @@ button:disabled {
   color: var(--ody-navy) !important;
 }
 
+#profile-page .profile-uid-row {
+  align-items: center !important;
+  min-height: 58px !important;
+}
+
+#profile-page .profile-uid-row > div {
+  display: flex !important;
+  align-items: center !important;
+  gap: .5rem !important;
+  min-width: 0 !important;
+}
+
+#profile-page .profile-uid-lbl {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #2A5CAA !important;
+  -webkit-text-fill-color: #2A5CAA !important;
+  font-size: .72rem !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  letter-spacing: .04em !important;
+  margin-right: 0 !important;
+  padding: .28rem .48rem !important;
+  border-radius: 999px !important;
+  background: #EEF5FF !important;
+  border: 1px solid #C8DAF6 !important;
+  white-space: nowrap !important;
+}
+
+#profile-page .profile-uid-val {
+  color: #050816 !important;
+  -webkit-text-fill-color: #050816 !important;
+  font-size: .96rem !important;
+  font-weight: 800 !important;
+  letter-spacing: .02em !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+#profile-page .profile-uid-copy {
+  flex: 0 0 auto !important;
+}
+
+#profile-page .profile-section-title {
+  color: #050816 !important;
+  -webkit-text-fill-color: #050816 !important;
+  font-size: 1.04rem !important;
+  font-weight: 900 !important;
+  letter-spacing: .01em !important;
+  text-transform: none !important;
+  margin-bottom: 1rem !important;
+}
+
+.pw-wrap {
+  position: relative !important;
+  width: 100% !important;
+}
+
+.pw-wrap input {
+  width: 100% !important;
+  padding-right: 3.05rem !important;
+}
+
+.pw-toggle {
+  position: absolute !important;
+  right: .62rem !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 32px !important;
+  height: 32px !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  color: #050816 !important;
+  cursor: pointer !important;
+  font-size: 0 !important;
+  line-height: 1 !important;
+  opacity: .82 !important;
+  transition: opacity .18s ease, background .18s ease, transform .18s ease !important;
+}
+
+.pw-toggle::before {
+  content: "" !important;
+  width: 19px !important;
+  height: 19px !important;
+  display: block !important;
+  background: currentColor !important;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 5C6.4 5 2.1 9.1 1 12c1.1 2.9 5.4 7 11 7s9.9-4.1 11-7C21.9 9.1 17.6 5 12 5Zm0 11.2A4.2 4.2 0 1 1 12 7.8a4.2 4.2 0 0 1 0 8.4Zm0-2.1a2.1 2.1 0 1 0 0-4.2 2.1 2.1 0 0 0 0 4.2Z'/%3E%3C/svg%3E") center / contain no-repeat !important;
+  mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 5C6.4 5 2.1 9.1 1 12c1.1 2.9 5.4 7 11 7s9.9-4.1 11-7C21.9 9.1 17.6 5 12 5Zm0 11.2A4.2 4.2 0 1 1 12 7.8a4.2 4.2 0 0 1 0 8.4Zm0-2.1a2.1 2.1 0 1 0 0-4.2 2.1 2.1 0 0 0 0 4.2Z'/%3E%3C/svg%3E") center / contain no-repeat !important;
+}
+
+.pw-toggle.is-visible::before {
+  -webkit-mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2.7 3.2 21 21.5l-1.4 1.3-3-3A12.6 12.6 0 0 1 12 20C6.4 20 2.1 15.9 1 13c.5-1.2 1.5-2.7 2.9-4L1.3 4.6l1.4-1.4Zm5.1 5.1 1.5 1.5a4.2 4.2 0 0 0 5.1 5.1l1.5 1.5c-1.1.7-2.4 1-3.9 1-4.1 0-7.5-2.6-8.8-4.5.7-1.1 2-2.5 3.6-3.6Zm4.2-3.2c5.6 0 9.9 4.1 11 7-.4 1.1-1.3 2.3-2.5 3.5l-3-3A4.2 4.2 0 0 0 12 6.9c-1.1 0-2 .4-2.8 1L7.6 6.3A12.4 12.4 0 0 1 12 5.1Z'/%3E%3C/svg%3E") center / contain no-repeat !important;
+  mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2.7 3.2 21 21.5l-1.4 1.3-3-3A12.6 12.6 0 0 1 12 20C6.4 20 2.1 15.9 1 13c.5-1.2 1.5-2.7 2.9-4L1.3 4.6l1.4-1.4Zm5.1 5.1 1.5 1.5a4.2 4.2 0 0 0 5.1 5.1l1.5 1.5c-1.1.7-2.4 1-3.9 1-4.1 0-7.5-2.6-8.8-4.5.7-1.1 2-2.5 3.6-3.6Zm4.2-3.2c5.6 0 9.9 4.1 11 7-.4 1.1-1.3 2.3-2.5 3.5l-3-3A4.2 4.2 0 0 0 12 6.9c-1.1 0-2 .4-2.8 1L7.6 6.3A12.4 12.4 0 0 1 12 5.1Z'/%3E%3C/svg%3E") center / contain no-repeat !important;
+}
+
+.pw-toggle:hover {
+  opacity: 1 !important;
+  background: #F2F6FC !important;
+}
+
 .profile-level-badge,
 .profile-uid-copy,
 .tx-all,
@@ -4946,9 +5098,210 @@ button:disabled {
 }
 
 .stat-icon {
-  background: var(--ody-bg-soft) !important;
+  background: linear-gradient(145deg, #F8FBFF, #EEF5FF) !important;
   border: 1px solid var(--ody-border) !important;
   color: var(--ody-blue) !important;
+  border-radius: 14px !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.95) !important;
+}
+
+.stat-icon svg {
+  width: 1.5rem !important;
+  height: 1.5rem !important;
+  display: block !important;
+  fill: none !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+
+.stat-title-line {
+  display: flex !important;
+  align-items: center !important;
+  gap: .44rem !important;
+  min-width: 0 !important;
+  margin-bottom: .2rem !important;
+}
+
+.stat-title-line .stat-title {
+  margin-bottom: 0 !important;
+}
+
+.stat-info-btn {
+  width: 22px !important;
+  height: 22px !important;
+  flex: 0 0 22px !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  padding: 0 !important;
+  border: 1px solid rgba(84, 138, 240, .32) !important;
+  border-radius: 999px !important;
+  background:
+    radial-gradient(circle at 35% 25%, #FFFFFF 0%, #F5FAFF 45%, #EAF2FF 100%) !important;
+  color: var(--ody-blue) !important;
+  cursor: pointer !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.92),
+    0 0 0 3px rgba(84,138,240,.06),
+    0 8px 18px rgba(42,92,170,.12) !important;
+  transition: transform .2s cubic-bezier(.22,.9,.36,1), border-color .2s ease, box-shadow .2s ease, background .2s ease !important;
+}
+
+.stat-info-btn svg {
+  width: 15px !important;
+  height: 15px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 2.15 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+
+.stat-info-btn:hover {
+  transform: translateY(-1px) !important;
+  border-color: rgba(42,92,170,.55) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.96),
+    0 0 0 4px rgba(84,138,240,.10),
+    0 12px 24px rgba(42,92,170,.18) !important;
+}
+
+.stat-info-btn:focus-visible {
+  outline: none !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.96),
+    0 0 0 4px rgba(255,98,0,.18),
+    0 12px 24px rgba(42,92,170,.18) !important;
+}
+
+.stat-info-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 1600 !important;
+  display: none !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 1.2rem !important;
+  background: rgba(16, 21, 53, .42) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+.stat-info-overlay.open {
+  display: flex !important;
+}
+
+.stat-info-card {
+  position: relative !important;
+  width: min(410px, 92vw) !important;
+  padding: 1.35rem 1.35rem 1.18rem !important;
+  border-radius: 22px !important;
+  border: 1px solid var(--ody-border) !important;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(84,138,240,.14), transparent 38%),
+    radial-gradient(circle at 0% 100%, rgba(255,98,0,.08), transparent 34%),
+    #FFFFFF !important;
+  color: var(--ody-text) !important;
+  box-shadow:
+    0 28px 70px rgba(16,21,53,.24),
+    inset 0 1px 0 rgba(255,255,255,.92) !important;
+  transform: translateY(8px) scale(.98) !important;
+  animation: statInfoIn .24s cubic-bezier(.22,.9,.36,1) forwards !important;
+}
+
+.stat-info-mark {
+  width: 42px !important;
+  height: 42px !important;
+  display: grid !important;
+  place-items: center !important;
+  margin-bottom: .78rem !important;
+  border-radius: 15px !important;
+  border: 1px solid rgba(84,138,240,.28) !important;
+  background: linear-gradient(145deg, #F8FBFF, #EAF2FF) !important;
+  color: var(--ody-blue) !important;
+  box-shadow: 0 12px 28px rgba(42,92,170,.14) !important;
+}
+
+.stat-info-mark svg {
+  width: 24px !important;
+  height: 24px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 2.1 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+
+.stat-info-kicker {
+  color: var(--ody-orange) !important;
+  font-size: .72rem !important;
+  font-weight: 900 !important;
+  letter-spacing: .08em !important;
+  text-transform: uppercase !important;
+  margin-bottom: .28rem !important;
+}
+
+.stat-info-card h3 {
+  margin: 0 2.2rem .52rem 0 !important;
+  color: var(--ody-navy) !important;
+  font-size: 1.22rem !important;
+  line-height: 1.18 !important;
+  font-weight: 900 !important;
+}
+
+.stat-info-card p {
+  margin: 0 0 1.05rem !important;
+  color: var(--ody-muted) !important;
+  font-size: .92rem !important;
+  line-height: 1.58 !important;
+}
+
+.stat-info-close {
+  position: absolute !important;
+  top: .95rem !important;
+  right: .95rem !important;
+  width: 32px !important;
+  height: 32px !important;
+  display: grid !important;
+  place-items: center !important;
+  border: 1px solid var(--ody-border) !important;
+  border-radius: 999px !important;
+  background: #F8FBFF !important;
+  color: var(--ody-navy) !important;
+  cursor: pointer !important;
+}
+
+.stat-info-ok {
+  width: 100% !important;
+  min-height: 42px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: linear-gradient(135deg, var(--ody-blue), var(--ody-blue-dark)) !important;
+  color: #FFFFFF !important;
+  font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+  font-size: .9rem !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+  box-shadow: 0 14px 28px rgba(42,92,170,.22) !important;
+}
+
+@keyframes statInfoIn {
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@media (max-width: 520px) {
+  .stat-info-btn {
+    width: 20px !important;
+    height: 20px !important;
+    flex-basis: 20px !important;
+  }
+  .stat-info-btn svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+  .stat-info-card {
+    border-radius: 20px !important;
+    padding: 1.2rem 1.15rem 1.05rem !important;
+  }
 }
 
 .stat-value.orange,
@@ -6612,7 +6965,7 @@ button:disabled {
         <label>Password</label>
         <div class="pw-wrap">
           <input type="password" id="login-password" placeholder="Enter your password" autocomplete="current-password">
-          <button class="pw-toggle" onclick="togglePw('login-password', this)" type="button" aria-label="Show password">&#128065;</button>
+          <button class="pw-toggle" onclick="togglePw('login-password', this)" type="button" aria-label="Show password"></button>
         </div>
       </div>
 
@@ -6968,7 +7321,7 @@ button:disabled {
         <div class="pw-wrap">
           <input type="password" id="reg-password" placeholder="Create a strong password"
                  autocomplete="new-password" maxlength="40" oninput="checkStrength(this.value)">
-          <button class="pw-toggle" onclick="togglePw('reg-password', this)" type="button" aria-label="Show password">&#128065;</button>
+          <button class="pw-toggle" onclick="togglePw('reg-password', this)" type="button" aria-label="Show password"></button>
         </div>
         <div class="strength-bar-wrap">
           <div class="strength-bar" id="strength-bar"></div>
@@ -6980,19 +7333,25 @@ button:disabled {
         <label>Confirm Password</label>
         <div class="pw-wrap">
           <input type="password" id="reg-confirm" placeholder="Repeat your password" autocomplete="new-password" maxlength="40">
-          <button class="pw-toggle" onclick="togglePw('reg-confirm', this)" type="button" aria-label="Show password">&#128065;</button>
+          <button class="pw-toggle" onclick="togglePw('reg-confirm', this)" type="button" aria-label="Show password"></button>
         </div>
       </div>
 
       <!-- Withdrawal PIN -->
       <div class="input-group">
         <label>Withdrawal PIN (6 digits)</label>
-        <input type="password" id="reg-pin" placeholder="Set a 6-digit withdrawal PIN" maxlength="6" inputmode="numeric">
+        <div class="pw-wrap">
+          <input type="password" id="reg-pin" placeholder="Set a 6-digit withdrawal PIN" maxlength="6" inputmode="numeric">
+          <button class="pw-toggle" onclick="togglePw('reg-pin', this)" type="button" aria-label="Show password"></button>
+        </div>
       </div>
 
       <div class="input-group">
         <label>Confirm Withdrawal PIN</label>
-        <input type="password" id="reg-pin-confirm" placeholder="Repeat your withdrawal PIN" maxlength="6" inputmode="numeric">
+        <div class="pw-wrap">
+          <input type="password" id="reg-pin-confirm" placeholder="Repeat your withdrawal PIN" maxlength="6" inputmode="numeric">
+          <button class="pw-toggle" onclick="togglePw('reg-pin-confirm', this)" type="button" aria-label="Show password"></button>
+        </div>
       </div>
 
       <div class="checkbox-row reg-full" id="reg-terms-row" role="checkbox" aria-checked="false" tabindex="0" onclick="toggleRegistrationTerms(event)" onkeydown="handleRegistrationTermsKey(event)">
@@ -8080,12 +8439,14 @@ async function apiPost(endpoint, body) {
 
 function openModal(tab) {
   document.getElementById('modal-overlay').classList.add('active');
+  document.getElementById('modal-card').classList.remove('welcome-mode');
   setAuthTabsVisible(true);
   switchTab(tab || 'login');
   document.getElementById('welcome-screen').classList.remove('visible');
 }
 function closeModal() {
   document.getElementById('modal-overlay').classList.remove('active');
+  document.getElementById('modal-card').classList.remove('welcome-mode');
 }
 function overlayClick(e) {
   if(e.target===document.getElementById('modal-overlay')) closeModal();
@@ -8095,6 +8456,7 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
 function switchTab(tab) {
   setAuthTabsVisible(true);
   document.getElementById('modal-card').classList.toggle('register-mode', tab==='register');
+  document.getElementById('modal-card').classList.remove('welcome-mode');
   document.getElementById('tab-login').classList.toggle('active', tab==='login');
   document.getElementById('tab-register').classList.toggle('active', tab==='register');
   document.getElementById('form-login').classList.toggle('visible', tab==='login');
@@ -8196,7 +8558,10 @@ function showToast(text, type, duration, forceToast) {
 }
 
 document.addEventListener('keydown', function(event) {
-  if (event.key === 'Escape') hideAppPopup();
+  if (event.key === 'Escape') {
+    hideAppPopup();
+    if (typeof closeStatInfo === 'function') closeStatInfo();
+  }
 });
 
 /* Keep showMsg as wrapper so existing calls still work */
@@ -8211,10 +8576,33 @@ function clearMsgs() {
 
 function togglePw(inputId, btn) {
   const input = document.getElementById(inputId);
+  if (!input || !btn) return;
   const show = input.type === 'password';
   input.type = show ? 'text' : 'password';
-  btn.innerHTML = show ? '&#128584;' : '&#128065;';
+  btn.classList.toggle('is-visible', show);
+  btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
 }
+
+function handleAuthEnterSubmit(event) {
+  if (!event || event.key !== 'Enter' || event.isComposing) return;
+  var form = event.target && event.target.closest && event.target.closest('#form-login, #form-register');
+  if (!form || !form.classList.contains('visible')) return;
+  if (event.target.closest('button, a, .terms-link, #reg-terms-row')) return;
+  var tag = (event.target.tagName || '').toLowerCase();
+  if (tag !== 'input') return;
+  event.preventDefault();
+  var btn = document.getElementById(form.id === 'form-login' ? 'login-btn' : 'register-btn');
+  if (btn && btn.classList.contains('loading')) return;
+  if (form.id === 'form-login') doLogin();
+  else doRegister();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  var loginForm = document.getElementById('form-login');
+  var registerForm = document.getElementById('form-register');
+  if (loginForm) loginForm.addEventListener('keydown', handleAuthEnterSubmit);
+  if (registerForm) registerForm.addEventListener('keydown', handleAuthEnterSubmit);
+});
 
 function checkStrength(pw) {
   const bar = document.getElementById('strength-bar');
@@ -8518,9 +8906,10 @@ function showWelcome(username, isFirstLogin) {
   document.getElementById('tab-login').classList.remove('active');
   document.getElementById('tab-register').classList.remove('active');
   setAuthTabsVisible(false);
+  document.getElementById('modal-card').classList.add('welcome-mode');
   const ws = document.getElementById('welcome-screen');
   ws.classList.add('visible');
-  document.getElementById('welcome-avatar').textContent = username[0].toUpperCase();
+  renderUserAvatar(document.getElementById('welcome-avatar'), getUser(), username);
   const title = isFirstLogin ? 'Welcome to Odyssey New Media, ' : 'Welcome back, ';
   document.getElementById('welcome-name').textContent = title + username + '!';
   const welcomeTitle = document.getElementById('welcome-title');
@@ -10622,7 +11011,8 @@ function closeTaskPage() {
     ['prod-overlay', 'open'],
     ['hist-overlay', 'open'],
     ['jackpot-overlay', 'open'],
-    ['insufficient-submit-overlay', 'open']
+    ['insufficient-submit-overlay', 'open'],
+    ['stat-info-overlay', 'open']
   ].forEach(function(item) {
     var element = document.getElementById(item[0]);
     if (element) element.classList.remove(item[1]);
@@ -10643,6 +11033,47 @@ function closeTaskPage() {
   stopTaskOrbitMotion();
   if (typeof window.stopTaskStarfield === 'function') window.stopTaskStarfield();
   if (typeof updateInterfaceActivity === 'function') updateInterfaceActivity();
+}
+
+var STAT_INFO_COPY = {
+  balance: {
+    title: 'Total Account Balance',
+    message: 'Your current account value. This includes your available balance, completed product profits, and credited rewards that have already been added to the account.'
+  },
+  stage: {
+    title: "Stage's Profit",
+    message: 'Profit generated during the current workload. This value resets after each completed workload so you can review the earnings for that stage clearly.'
+  },
+  insufficient: {
+    title: 'Insufficient Balance',
+    message: 'The amount required to clear the current product balance before submission can continue. Once the required deposit is completed, the product can be submitted normally.'
+  },
+  bonus: {
+    title: 'Prize Pool Bonus',
+    message: 'A bonus reward connected to the current priority product. After the priority product is completed, the bonus will be credited to your Total Account Balance.'
+  }
+};
+
+function openStatInfo(key) {
+  var data = STAT_INFO_COPY[key] || STAT_INFO_COPY.balance;
+  var overlay = document.getElementById('stat-info-overlay');
+  var title = document.getElementById('stat-info-title');
+  var message = document.getElementById('stat-info-message');
+  if (!overlay || !title || !message) return;
+  title.textContent = data.title;
+  message.textContent = data.message;
+  overlay.classList.add('open');
+}
+
+function closeStatInfo() {
+  var overlay = document.getElementById('stat-info-overlay');
+  if (overlay) overlay.classList.remove('open');
+}
+
+function statInfoOverlayClick(event) {
+  if (event && event.target === document.getElementById('stat-info-overlay')) {
+    closeStatInfo();
+  }
 }
 
 
@@ -10687,13 +11118,37 @@ function syncCreditMeters(user) {
   var rawScore = user && user.creditScore != null ? parseFloat(user.creditScore) : 100;
   if (isNaN(rawScore)) rawScore = 100;
   var score = Math.max(0, Math.min(100, Math.round(rawScore)));
-  var color = '#ffffff';
-  if (score <= 30) color = '#ff3b3b';
-  else if (score <= 50) color = '#ff8a2a';
-  else if (score <= 80) color = '#ffd84a';
-  else if (score <= 90) color = '#28d66f';
+  var color = '#548AF0';
+  var glow = 'rgba(84, 138, 240, .24)';
+  var soft = 'rgba(84, 138, 240, .08)';
+  var border = '#BDD3FF';
+  if (score <= 30) {
+    color = '#EF4444';
+    glow = 'rgba(239, 68, 68, .24)';
+    soft = 'rgba(239, 68, 68, .08)';
+    border = '#FECACA';
+  } else if (score <= 50) {
+    color = '#FF6200';
+    glow = 'rgba(255, 98, 0, .24)';
+    soft = 'rgba(255, 98, 0, .08)';
+    border = '#FED7AA';
+  } else if (score <= 80) {
+    color = '#EAB308';
+    glow = 'rgba(234, 179, 8, .24)';
+    soft = 'rgba(234, 179, 8, .09)';
+    border = '#FDE68A';
+  } else if (score <= 90) {
+    color = '#22C55E';
+    glow = 'rgba(34, 197, 94, .24)';
+    soft = 'rgba(34, 197, 94, .08)';
+    border = '#BBF7D0';
+  }
   document.querySelectorAll('#drawer-credit-meter, #profile-credit-meter').forEach(function(el) {
     el.style.setProperty('--credit-color', color);
+    el.style.setProperty('--credit-glow', glow);
+    el.style.setProperty('--credit-soft', soft);
+    el.style.setProperty('--credit-border', border);
+    el.style.setProperty('--credit-score', score + '%');
     var percent = el.querySelector('[data-credit-percent]');
     if (percent) percent.textContent = score + '%';
   });
@@ -11421,37 +11876,99 @@ async function savePassword() {
 
     <div class="stats-card">
       <div class="stat-row">
-        <div class="stat-icon">&#128179;</div>
+        <div class="stat-icon" aria-hidden="true">
+          <svg viewBox="0 0 32 32">
+            <rect x="5.5" y="9" width="21" height="14" rx="3" stroke="#2A5CAA" stroke-width="2.2"/>
+            <path d="M8.5 13h15" stroke="#2A5CAA" stroke-width="2"/>
+            <rect x="18.8" y="16.4" width="4.7" height="3.2" rx="1" fill="#FF6200" stroke="none"/>
+          </svg>
+        </div>
         <div class="stat-text">
-          <div class="stat-title">Total Account Balance</div>
+          <div class="stat-title-line">
+            <div class="stat-title">Total Account Balance</div>
+            <button class="stat-info-btn" type="button" onclick="openStatInfo('balance')" aria-label="Explain Total Account Balance">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.5c-4.5 0-8 3.1-8 7.1 0 2.2 1.1 4.2 2.9 5.5l-.6 2.4 2.7-1.4c.9.3 1.9.5 3 .5 4.5 0 8-3.1 8-7s-3.5-7.1-8-7.1Z"/><path d="M12 10.8v4.1"/><path d="M12 8.1h.01"/></svg>
+            </button>
+          </div>
           <div class="stat-desc">Including profits and rewards</div>
         </div>
         <div class="stat-value orange" id="stat-balance">$0.00</div>
       </div>
       <div class="stat-row">
-        <div class="stat-icon">&#128200;</div>
+        <div class="stat-icon" aria-hidden="true">
+          <svg viewBox="0 0 32 32">
+            <path d="M7 23V8.5" stroke="#101535" stroke-width="2.2"/>
+            <path d="M7 23h18" stroke="#101535" stroke-width="2.2"/>
+            <path d="M10 19l5-4 4 2 6-7" stroke="#2A5CAA" stroke-width="2.4"/>
+            <circle cx="25" cy="10" r="2.5" fill="#FF6200" stroke="none"/>
+          </svg>
+        </div>
         <div class="stat-text">
-          <div class="stat-title">Stage's Profit</div>
+          <div class="stat-title-line">
+            <div class="stat-title">Stage's Profit</div>
+            <button class="stat-info-btn" type="button" onclick="openStatInfo('stage')" aria-label="Explain Stage's Profit">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.5c-4.5 0-8 3.1-8 7.1 0 2.2 1.1 4.2 2.9 5.5l-.6 2.4 2.7-1.4c.9.3 1.9.5 3 .5 4.5 0 8-3.1 8-7s-3.5-7.1-8-7.1Z"/><path d="M12 10.8v4.1"/><path d="M12 8.1h.01"/></svg>
+            </button>
+          </div>
           <div class="stat-desc">Stage Profit resets after each completed workload, allowing you to clearly see your earnings for that workload!</div>
         </div>
         <div class="stat-value orange" id="stat-stage">$0.00</div>
       </div>
       <div class="stat-row" id="insufficient-balance-row" style="display:none;">
-        <div class="stat-icon">&#9888;</div>
+        <div class="stat-icon" aria-hidden="true">
+          <svg viewBox="0 0 32 32">
+            <rect x="5.5" y="9" width="21" height="15" rx="3" stroke="#101535" stroke-width="2.2"/>
+            <path d="M9 14h12" stroke="#101535" stroke-width="2"/>
+            <rect x="18.7" y="17" width="5" height="3.5" rx="1.2" stroke="#2A5CAA" stroke-width="1.8"/>
+            <circle cx="23.5" cy="8.5" r="5.2" fill="#FFFFFF" stroke="#D13E3E" stroke-width="2"/>
+            <path d="M21.2 8.5h4.6" stroke="#D13E3E" stroke-width="2.2"/>
+            <path d="M9 20h5" stroke="#FF6200" stroke-width="2.1"/>
+          </svg>
+        </div>
         <div class="stat-text">
-          <div class="stat-title">Insufficient Balance</div>
+          <div class="stat-title-line">
+            <div class="stat-title">Insufficient Balance</div>
+            <button class="stat-info-btn" type="button" onclick="openStatInfo('insufficient')" aria-label="Explain Insufficient Balance">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.5c-4.5 0-8 3.1-8 7.1 0 2.2 1.1 4.2 2.9 5.5l-.6 2.4 2.7-1.4c.9.3 1.9.5 3 .5 4.5 0 8-3.1 8-7s-3.5-7.1-8-7.1Z"/><path d="M12 10.8v4.1"/><path d="M12 8.1h.01"/></svg>
+            </button>
+          </div>
           <div class="stat-desc">Amount required to deposit.</div>
         </div>
         <div class="stat-value orange" id="stat-insufficient">$0.00</div>
       </div>
       <div class="stat-row">
-        <div class="stat-icon">&#11088;</div>
+        <div class="stat-icon" aria-hidden="true">
+          <svg viewBox="0 0 32 32">
+            <path d="M8 14.5h16v11H8z" stroke="#101535" stroke-width="2.2"/>
+            <path d="M6.5 10h19v5H6.5z" stroke="#101535" stroke-width="2.2"/>
+            <path d="M16 10v15.5M7.5 15h17" stroke="#FF6200" stroke-width="2.2"/>
+            <path d="M16 10c-3.1-5.2-8-2.6-4.4.6M16 10c3.1-5.2 8-2.6 4.4.6" stroke="#FF6200" stroke-width="2.2"/>
+          </svg>
+        </div>
         <div class="stat-text">
-          <div class="stat-title">Prize Pool Bonus</div>
+          <div class="stat-title-line">
+            <div class="stat-title">Prize Pool Bonus</div>
+            <button class="stat-info-btn" type="button" onclick="openStatInfo('bonus')" aria-label="Explain Prize Pool Bonus">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.5c-4.5 0-8 3.1-8 7.1 0 2.2 1.1 4.2 2.9 5.5l-.6 2.4 2.7-1.4c.9.3 1.9.5 3 .5 4.5 0 8-3.1 8-7s-3.5-7.1-8-7.1Z"/><path d="M12 10.8v4.1"/><path d="M12 8.1h.01"/></svg>
+            </button>
+          </div>
           <div class="stat-desc">Prize Pool Bonus will be credited to your Total Account Balance once you complete the current priority product!</div>
         </div>
         <div class="stat-value yellow" id="stat-bonus">$0.00</div>
       </div>
+    </div>
+  </div>
+
+  <div class="stat-info-overlay" id="stat-info-overlay" onclick="statInfoOverlayClick(event)">
+    <div class="stat-info-card" role="dialog" aria-modal="true" aria-labelledby="stat-info-title">
+      <button class="stat-info-close" type="button" onclick="closeStatInfo()" aria-label="Close explanation">&#10005;</button>
+      <div class="stat-info-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M12 4.5c-4.5 0-8 3.1-8 7.1 0 2.2 1.1 4.2 2.9 5.5l-.6 2.4 2.7-1.4c.9.3 1.9.5 3 .5 4.5 0 8-3.1 8-7s-3.5-7.1-8-7.1Z"/><path d="M12 10.8v4.1"/><path d="M12 8.1h.01"/></svg>
+      </div>
+      <div class="stat-info-kicker">Account Metric</div>
+      <h3 id="stat-info-title">Account Metric</h3>
+      <p id="stat-info-message"></p>
+      <button class="stat-info-ok" type="button" onclick="closeStatInfo()">Got it</button>
     </div>
   </div>
 
@@ -11669,7 +12186,7 @@ async function savePassword() {
 
       <div class="profile-uid-row">
         <div>
-          <div class="profile-uid-lbl">UID:</div>
+          <span class="profile-uid-lbl">UID</span>
           <div class="profile-uid-val" id="pp-uid">-</div>
         </div>
         <button class="profile-uid-copy" onclick="copyUID()" aria-label="Copy UID"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
@@ -11688,15 +12205,24 @@ async function savePassword() {
         <div class="profile-section-title">Change Withdrawal PIN</div>
         <div class="profile-input-group">
           <label>Current Withdrawal PIN</label>
-          <input type="password" id="pp-cur-pin" placeholder="Enter current 6-digit PIN" maxlength="6" inputmode="numeric">
+          <div class="pw-wrap">
+            <input type="password" id="pp-cur-pin" placeholder="Enter current 6-digit PIN" maxlength="6" inputmode="numeric">
+            <button class="pw-toggle" onclick="togglePw('pp-cur-pin', this)" type="button" aria-label="Show password"></button>
+          </div>
         </div>
         <div class="profile-input-group">
           <label>New Withdrawal PIN</label>
-          <input type="password" id="pp-new-pin" placeholder="Enter new 6-digit PIN" maxlength="6" inputmode="numeric">
+          <div class="pw-wrap">
+            <input type="password" id="pp-new-pin" placeholder="Enter new 6-digit PIN" maxlength="6" inputmode="numeric">
+            <button class="pw-toggle" onclick="togglePw('pp-new-pin', this)" type="button" aria-label="Show password"></button>
+          </div>
         </div>
         <div class="profile-input-group">
           <label>Confirm Withdrawal PIN</label>
-          <input type="password" id="pp-confirm-pin" placeholder="Repeat new 6-digit PIN" maxlength="6" inputmode="numeric">
+          <div class="pw-wrap">
+            <input type="password" id="pp-confirm-pin" placeholder="Repeat new 6-digit PIN" maxlength="6" inputmode="numeric">
+            <button class="pw-toggle" onclick="togglePw('pp-confirm-pin', this)" type="button" aria-label="Show password"></button>
+          </div>
         </div>
         <button class="profile-save-btn" onclick="savePin()">Save PIN</button>
       </div>
@@ -11705,15 +12231,24 @@ async function savePassword() {
         <div class="profile-section-title">Change Login Password</div>
         <div class="profile-input-group">
           <label>Current Login Password</label>
-          <input type="password" id="pp-cur-pw" placeholder="Enter current password">
+          <div class="pw-wrap">
+            <input type="password" id="pp-cur-pw" placeholder="Enter current password">
+            <button class="pw-toggle" onclick="togglePw('pp-cur-pw', this)" type="button" aria-label="Show password"></button>
+          </div>
         </div>
         <div class="profile-input-group">
           <label>New Login Password</label>
-          <input type="password" id="pp-new-pw" placeholder="Enter new password">
+          <div class="pw-wrap">
+            <input type="password" id="pp-new-pw" placeholder="Enter new password">
+            <button class="pw-toggle" onclick="togglePw('pp-new-pw', this)" type="button" aria-label="Show password"></button>
+          </div>
         </div>
         <div class="profile-input-group">
           <label>Confirm Login Password</label>
-          <input type="password" id="pp-confirm-pw" placeholder="Repeat new password">
+          <div class="pw-wrap">
+            <input type="password" id="pp-confirm-pw" placeholder="Repeat new password">
+            <button class="pw-toggle" onclick="togglePw('pp-confirm-pw', this)" type="button" aria-label="Show password"></button>
+          </div>
         </div>
         <button class="profile-save-btn" onclick="savePassword()">Save Password</button>
       </div>
@@ -12696,7 +13231,19 @@ async function renderRewardsJourney() {
   timeline.innerHTML = rows.map(function(rowItems, rowIndex) {
     var rowFill = getRowFill(rowItems);
     var rowFillWidth = Math.round((rowFill * 0.75) * 10) / 10;
-    return '<div class="rp-row rp-row-' + (rowIndex + 1) + '" style="--rp-row-fill:' + rowFill + '%;--rp-row-fill-width:' + rowFillWidth + '%;--rp-row-fill-size:' + rowFillWidth + '%">'
+    var rowHasClaimed = rowItems.some(function(item) {
+      return claimedRewards.indexOf(Number(item.standard)) !== -1;
+    });
+    var rowBridgeComplete = rowIndex < rows.length - 1
+      && rowItems.length
+      && claimedRewards.indexOf(Number(rowItems[rowItems.length - 1].standard)) !== -1;
+    if (rowBridgeComplete) {
+      rowFillWidth = rowIndex === 0 ? 87.5 : 100;
+    } else if (rowIndex > 0 && rowHasClaimed) {
+      rowFillWidth = Math.min(100, Math.round((rowFillWidth + 12.5) * 10) / 10);
+    }
+    var rowFillSize = rowBridgeComplete ? 'calc(100% + 38px)' : (rowFillWidth + '%');
+    return '<div class="rp-row rp-row-' + (rowIndex + 1) + (rowBridgeComplete ? ' rp-row-bridge' : '') + '" style="--rp-row-fill:' + rowFill + '%;--rp-row-fill-width:' + rowFillWidth + '%;--rp-row-fill-size:' + rowFillSize + '">'
       + rowItems.map(function(item) {
         var state = getState(item.standard);
         var nodeContent = state === 'completed'
@@ -14592,6 +15139,12 @@ function closeJackpot() {
     linear-gradient(90deg, #FF980D 0%, #FF980D 72%, #F2B65C 84%, rgba(242,182,92,.48) 94%, rgba(84,138,240,.10) 100%) !important;
   box-shadow: 0 0 18px rgba(255,152,13,.34), 0 0 15px rgba(242,182,92,.20) !important;
   z-index: 1 !important;
+}
+
+@media (min-width: 761px) {
+  .rp-row:not(:first-child)::after {
+    left: 0 !important;
+  }
 }
 
 .rp-row .rp-milestone {
