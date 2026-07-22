@@ -8667,6 +8667,16 @@ async function doLogin() {
 
   setLoading('login-btn', true);
   try {
+    try {
+      const accountCheck = await fetch(API_BASE + '/api/check-user?username=' + encodeURIComponent(username), { cache: 'no-store' });
+      const accountCheckData = await accountCheck.json().catch(function() { return null; });
+      if(accountCheck.ok && accountCheckData && accountCheckData.exists === false) {
+        setLoading('login-btn', false);
+        showMsg('login-msg', 'The username does not exist.', 'error');
+        return;
+      }
+    } catch(checkErr) {}
+
     const data = await apiPost('/api/login', { email: username, password: pw });
     if(!data.ok) {
       setLoading('login-btn', false);
