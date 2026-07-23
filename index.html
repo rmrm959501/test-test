@@ -7484,9 +7484,10 @@ function syncMembershipPageScroll() {
       contentBottom = Math.max(contentBottom, rect.bottom);
     });
 
-    var hiddenAmount = Math.max(0, Math.ceil((contentBottom + (page.scrollTop || 0)) - readableBottom));
+    var currentScroll = page.scrollTop || 0;
+    var hiddenAmount = Math.max(0, Math.ceil((contentBottom + currentScroll) - readableBottom));
     var needsScroll = hiddenAmount > 2;
-    if (needsScroll) {
+    if (needsScroll || currentScroll > 0) {
       var selectorCover = selectorRect ? Math.max(74, Math.ceil(viewport.bottom - selectorTop + 30)) : 92;
       var dynamicPad = membershipSelectorMobileQuery.matches
         ? Math.min(160, Math.max(selectorCover, 86))
@@ -7495,7 +7496,6 @@ function syncMembershipPageScroll() {
       page.classList.add('membership-page-scrollable');
     } else {
       page.classList.remove('membership-page-scrollable');
-      page.scrollTop = 0;
     }
   });
 }
@@ -7884,6 +7884,7 @@ function renderMembershipCards(user) {
     card.style.setProperty('--pm-title-glow', theme.titleGlow);
     card.onclick = function(event) {
       if (event.target.closest('button')) return;
+      if (index === membershipSlideIndex) return;
       membershipSlideIndex = index;
       renderMembershipCards(user);
     };
@@ -9388,7 +9389,6 @@ function runTaskOrbitConvergence(onComplete) {
   if (taskOrbitGathering) return;
   const scene = document.getElementById('orbit-scene');
   const planet = document.getElementById('start-planet');
-  const label = planet ? planet.querySelector('.start-planet-label') : null;
   const status = document.getElementById('start-planet-status');
   if (!scene) { if (onComplete) onComplete(); return; }
 
@@ -9398,13 +9398,9 @@ function runTaskOrbitConvergence(onComplete) {
   taskLaunchStart = 0;
   scene.classList.add('is-assigning');
 
-  if (label) {
-    label.dataset.original = label.innerHTML || 'START PROJECT';
-    label.innerHTML = 'ASSIGNING PRODUCT';
-  }
   if (status) {
-    status.dataset.original = status.textContent || 'READY TO ASSIGN';
-    status.textContent = 'ASSIGNING PRODUCT';
+    status.dataset.original = status.textContent || 'Ready To Assign';
+    status.textContent = 'Assigning Product';
   }
 
   runTaskReferenceAssignAnimation(onComplete)
@@ -9419,8 +9415,7 @@ function runTaskOrbitConvergence(onComplete) {
       taskProductShown = false;
       taskOrbitGathering = false;
       scene.classList.remove('is-assigning');
-      if (label && label.dataset.original) label.innerHTML = label.dataset.original;
-      if (status && status.dataset.original && status.textContent === 'ASSIGNING PRODUCT') {
+      if (status && status.dataset.original && status.textContent === 'Assigning Product') {
         status.textContent = status.dataset.original;
       }
       document.body.classList.remove('task-reference-scanning');
@@ -9881,7 +9876,7 @@ function runTaskOrbitConvergence(onComplete) {
     const planet = document.getElementById('start-planet');
     const startHit = document.getElementById('start-planet');
     if (status) {
-      status.textContent = completed ? 'COMPLETED THE SET!' : (pending ? 'PENDING SUBMISSION' : 'READY TO ASSIGN');
+      status.textContent = completed ? 'Completed The Set!' : (pending ? 'Pending Submission' : 'Ready To Assign');
       status.classList.toggle('completed', completed);
     }
     if (planet) planet.classList.toggle('disabled', completed);
@@ -11126,7 +11121,7 @@ function showTaskInterface(level, cfg) {
     document.getElementById('start-planet').classList.remove('disabled');
     var status = document.getElementById('start-planet-status');
     if (status) {
-      status.textContent = 'READY TO ASSIGN';
+      status.textContent = 'Ready To Assign';
       status.classList.remove('completed');
     }
 
@@ -11211,10 +11206,10 @@ function showTaskInterface(level, cfg) {
             var statusEl = document.getElementById('start-planet-status');
             if (S.done >= S.total) {
               if (planet) { planet.classList.add('disabled'); planet.disabled = true; }
-              if (statusEl) { statusEl.textContent = 'COMPLETED THE SET!'; statusEl.classList.add('completed'); }
+              if (statusEl) { statusEl.textContent = 'Completed The Set!'; statusEl.classList.add('completed'); }
             } else {
               if (planet) { planet.classList.remove('disabled'); planet.disabled = false; }
-              if (statusEl) { statusEl.textContent = 'READY TO ASSIGN'; statusEl.classList.remove('completed'); }
+              if (statusEl) { statusEl.textContent = 'Ready To Assign'; statusEl.classList.remove('completed'); }
             }
           }
         }).catch(function(){});
@@ -12089,7 +12084,18 @@ async function savePassword() {
   <!-- Task canvas background -->
   <canvas id="canvas-bg" style="position:fixed;inset:0;z-index:0;pointer-events:none;"></canvas>
   <div class="task-reference-bg-layer" aria-hidden="true">
-    <div class="task-reference-bg-blobs"></div>
+    <div class="task-reference-bg-grid">
+      <div class="task-grid-aura"></div>
+      <div class="task-grid-lines"></div>
+      <div class="task-grid-spot"></div>
+      <span class="task-grid-node" style="left:30%;top:30%"></span>
+      <span class="task-grid-node" style="left:66%;top:40%;animation-delay:1.3s"></span>
+      <span class="task-grid-node" style="left:50%;top:56%;animation-delay:2.2s"></span>
+      <span class="task-grid-node" style="left:22%;top:52%;animation-delay:.7s"></span>
+      <span class="task-grid-node" style="left:78%;top:24%;animation-delay:3s"></span>
+      <div class="task-grid-focal"></div>
+      <div class="task-grid-grain"></div>
+    </div>
   </div>
 
   <!-- Orbit scene from task.html -->
@@ -12122,7 +12128,7 @@ async function savePassword() {
         <span class="sb-ic" aria-hidden="true">&#9654;</span>
         <span class="start-planet-label sb-tx">START PROJECT</span>
       </button>
-      <div class="start-planet-status assign-pill" id="start-planet-status">READY TO ASSIGN</div>
+      <div class="start-planet-status assign-pill" id="start-planet-status">Ready To Assign</div>
     </div>
     <div class="launch-aura" aria-hidden="true"><i></i><i></i><i></i></div>
 
@@ -12239,7 +12245,9 @@ async function savePassword() {
   <!-- History FAB -->
   <div class="history-fab" onclick="openHistory()" title="History">
     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M5 7h14M5 12h14M5 17h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <path d="M3 3v6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M3.5 9a9 9 0 1 0 2-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M12 7v5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
     <span>History</span>
   </div>
@@ -16312,7 +16320,7 @@ body.logged-in .iframe-section {
 
 /* Odyssey task reference graft: background, launch CTA, history button, and assign scan. */
 #task-page.visible {
-  background: #f7f9ff !important;
+  background: #f4f7fd !important;
   color: #1f2a44 !important;
 }
 
@@ -16326,17 +16334,121 @@ body.logged-in .iframe-section {
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
-  background: #f7f9ff;
+  background: #f4f7fd;
 }
 
-#task-page .task-reference-bg-blobs {
+#task-page .task-reference-bg-grid {
   position: absolute;
   inset: 0;
+  opacity: 1;
+  overflow: hidden;
+}
+
+#task-page .task-grid-aura {
+  position: absolute;
+  inset: -6%;
+  pointer-events: none;
+  will-change: transform;
   background:
-    radial-gradient(620px 520px at 16% 18%, rgba(120, 170, 255, .38), transparent 62%),
-    radial-gradient(560px 520px at 86% 26%, rgba(150, 230, 205, .32), transparent 62%),
-    radial-gradient(720px 620px at 62% 108%, rgba(180, 200, 255, .28), transparent 60%);
-  filter: blur(6px);
+    radial-gradient(52% 46% at 50% 32%, rgba(118, 166, 255, .30), transparent 70%),
+    radial-gradient(40% 42% at 84% 10%, rgba(150, 140, 255, .18), transparent 72%),
+    radial-gradient(46% 48% at 10% 90%, rgba(110, 200, 220, .16), transparent 72%);
+  animation: taskGridAuraShift 20s ease-in-out infinite;
+}
+
+#task-page .task-grid-lines {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(66, 116, 210, .11) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(66, 116, 210, .11) 1px, transparent 1px),
+    linear-gradient(rgba(66, 116, 210, .20) 1.5px, transparent 1.5px),
+    linear-gradient(90deg, rgba(66, 116, 210, .20) 1.5px, transparent 1.5px);
+  background-size: 40px 40px, 40px 40px, 160px 160px, 160px 160px;
+  -webkit-mask-image: radial-gradient(118% 94% at 50% 34%, #000 40%, transparent 84%);
+  mask-image: radial-gradient(118% 94% at 50% 34%, #000 40%, transparent 84%);
+}
+
+#task-page .task-grid-spot {
+  position: absolute;
+  width: 560px;
+  height: 560px;
+  left: 50%;
+  top: 34%;
+  margin: -280px 0 0 -280px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(88, 148, 238, .20), transparent 66%);
+  mix-blend-mode: multiply;
+  filter: blur(4px);
+  pointer-events: none;
+  will-change: transform;
+  animation: taskGridSpotDrift 17s ease-in-out infinite;
+}
+
+#task-page .task-grid-node {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(70, 120, 220, .85);
+  box-shadow: 0 0 12px rgba(70, 120, 220, .55);
+  transform: translate(-50%, -50%);
+  animation: taskGridNodePulse 4.5s ease-in-out infinite;
+}
+
+#task-page .task-grid-focal {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(48% 36% at 50% 32%, rgba(255, 255, 255, .50), transparent 70%),
+    radial-gradient(122% 100% at 50% 50%, transparent 60%, rgba(205, 217, 240, .50) 100%);
+}
+
+#task-page .task-grid-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: .30;
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@keyframes taskGridAuraShift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-2.5%, 2%) scale(1.05); }
+}
+
+@keyframes taskGridSpotDrift {
+  0%, 100% { transform: translate(-18%, -8%) scale(1); }
+  50% { transform: translate(20%, 12%) scale(1.12); }
+}
+
+@keyframes taskGridNodePulse {
+  0%, 100% { opacity: .20; transform: translate(-50%, -50%) scale(.7); }
+  50% { opacity: .9; transform: translate(-50%, -50%) scale(1.15); }
+}
+
+body.task-reference-scanning #task-page .task-grid-aura {
+  filter: brightness(1.1) saturate(1.15);
+  animation-duration: 10s;
+}
+
+body.task-reference-scanning #task-page .task-grid-spot {
+  animation-duration: 7s;
+}
+
+body.task-reference-scanning #task-page .task-grid-node {
+  animation-duration: 2s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #task-page .task-grid-aura,
+  #task-page .task-grid-spot,
+  #task-page .task-grid-node,
+  #task-page .start-planet::before {
+    animation: none !important;
+  }
 }
 
 #task-page .orbit-scene {
@@ -16381,16 +16493,21 @@ body.logged-in .iframe-section {
   height: 76px !important;
   min-width: 276px !important;
   padding: 0 48px !important;
-  border: none !important;
-  border-radius: 18px !important;
+  border: 1.5px solid rgba(63, 111, 214, .55) !important;
+  border-radius: 40px !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   gap: 13px !important;
   cursor: pointer !important;
-  color: #fff !important;
-  background: linear-gradient(135deg, #5b8def, #3f6fd6) !important;
-  box-shadow: 0 20px 42px -16px rgba(63, 111, 214, .7) !important;
+  color: #22539e !important;
+  background: linear-gradient(135deg, rgba(63, 111, 214, .14), rgba(63, 111, 214, .05)) !important;
+  box-shadow:
+    0 0 0 4px rgba(63, 111, 214, .10),
+    0 10px 30px -12px rgba(63, 111, 214, .50),
+    inset 0 0 18px rgba(63, 111, 214, .15) !important;
+  backdrop-filter: blur(2px) !important;
+  -webkit-backdrop-filter: blur(2px) !important;
   transform: none !important;
   transition: transform .18s ease, box-shadow .18s ease, background .3s !important;
 }
@@ -16398,11 +16515,11 @@ body.logged-in .iframe-section {
 #task-page .start-planet::before {
   content: "" !important;
   position: absolute !important;
-  inset: -8px !important;
-  border-radius: 24px !important;
-  border: 1px solid rgba(99, 140, 225, .4) !important;
+  inset: -6px !important;
+  border-radius: 44px !important;
+  border: 1px solid rgba(63, 111, 214, .55) !important;
   background: transparent !important;
-  box-shadow: none !important;
+  box-shadow: 0 0 24px rgba(63, 111, 214, .35) !important;
   pointer-events: none !important;
   animation: taskReferenceHalo 3.2s ease-in-out infinite !important;
 }
@@ -16418,7 +16535,10 @@ body.logged-in .iframe-section {
 
 #task-page .start-planet:hover:not(:disabled) {
   transform: translateY(-3px) !important;
-  box-shadow: 0 24px 48px -16px rgba(63, 111, 214, .78) !important;
+  box-shadow:
+    0 0 0 4px rgba(63, 111, 214, .14),
+    0 14px 34px -12px rgba(63, 111, 214, .58),
+    inset 0 0 22px rgba(63, 111, 214, .18) !important;
 }
 
 #task-page .start-planet:active:not(:disabled) {
@@ -16436,7 +16556,7 @@ body.logged-in .iframe-section {
   display: inline-flex !important;
   font-size: 15px !important;
   line-height: 1 !important;
-  color: #fff !important;
+  color: #3f6fd6 !important;
 }
 
 #task-page .start-planet-label {
@@ -16445,8 +16565,9 @@ body.logged-in .iframe-section {
   font-size: 19px !important;
   line-height: 1 !important;
   font-weight: 800 !important;
-  letter-spacing: 2px !important;
-  color: #fff !important;
+  letter-spacing: 4px !important;
+  color: #22539e !important;
+  font-family: "Consolas", "SF Mono", "Cascadia Mono", monospace !important;
   text-align: center !important;
   text-shadow: none !important;
   white-space: nowrap !important;
@@ -16488,7 +16609,7 @@ body.task-page-active > .history-fab {
   left: 26px !important;
   right: auto !important;
   bottom: 26px !important;
-  z-index: 11920 !important;
+  z-index: 760 !important;
   display: flex !important;
   align-items: center !important;
   gap: 8px !important;
@@ -16502,6 +16623,14 @@ body.task-page-active > .history-fab {
   line-height: 1 !important;
   box-shadow: 0 18px 45px -20px rgba(46, 78, 150, .35) !important;
   cursor: pointer !important;
+  transform: none !important;
+}
+
+body.drawer-open #task-page.visible .history-fab,
+body.drawer-open.task-page-active > .history-fab {
+  z-index: 760 !important;
+  filter: blur(2px) opacity(.34) !important;
+  pointer-events: none !important;
   transform: none !important;
 }
 
@@ -16760,11 +16889,12 @@ body.task-page-active > .history-fab svg {
     height: 64px !important;
     min-width: 232px !important;
     padding: 0 30px !important;
-    border-radius: 16px !important;
+    border-radius: 40px !important;
   }
 
   #task-page .start-planet-label {
     font-size: 16px !important;
+    letter-spacing: 3px !important;
   }
 
   #task-page.visible .history-fab,
