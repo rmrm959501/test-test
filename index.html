@@ -5241,7 +5241,7 @@ button:disabled {
 }
 
 .stat-info-card h3 {
-  margin: 0 2.2rem .52rem 0 !important;
+  margin: 0 0 .52rem 0 !important;
   color: var(--ody-navy) !important;
   font-size: 1.22rem !important;
   line-height: 1.18 !important;
@@ -5422,6 +5422,138 @@ button:disabled {
   background: #FFF7ED !important;
   color: var(--ody-warning) !important;
   border-color: #FED7AA !important;
+}
+
+.hist-status.completed {
+  background: #ECFDF5 !important;
+  color: #0A8A62 !important;
+  border-color: rgba(10, 138, 98, .24) !important;
+}
+
+.hist-card {
+  padding: 22px !important;
+  border-radius: 22px !important;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(84,138,240,.08), transparent 34%),
+    linear-gradient(180deg, #FFFFFF 0%, #F8FBFF 100%) !important;
+  border: 1px solid rgba(186,206,236,.88) !important;
+  box-shadow:
+    0 22px 52px -40px rgba(31, 71, 142, .46),
+    inset 0 1px 0 rgba(255,255,255,.94) !important;
+}
+
+.hist-card:hover {
+  transform: translateY(-3px) !important;
+  box-shadow:
+    0 28px 60px -42px rgba(31, 71, 142, .54),
+    inset 0 1px 0 rgba(255,255,255,.96) !important;
+}
+
+.hist-card.pending,
+.hist-card.premium,
+.hist-card.special,
+.hist-chain-frame {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(84,138,240,.08), transparent 34%),
+    linear-gradient(180deg, #FFFFFF 0%, #F8FBFF 100%) !important;
+  border-color: rgba(186,206,236,.9) !important;
+}
+
+.hist-status-row {
+  margin-bottom: 14px !important;
+}
+
+.hist-chain-product {
+  min-height: 0 !important;
+  margin: 12px 0 !important;
+  padding: 14px !important;
+  border: 1px solid rgba(205,218,238,.88) !important;
+  border-radius: 18px !important;
+  background: rgba(255,255,255,.72) !important;
+}
+
+.hist-product-head {
+  margin-bottom: 14px !important;
+  padding: 12px !important;
+  border: 1px solid rgba(205,218,238,.9) !important;
+  border-radius: 18px !important;
+  background: linear-gradient(180deg, #FFFFFF, #F5F9FF) !important;
+}
+
+.hist-thumb {
+  width: 5.4rem !important;
+  height: 5.4rem !important;
+  border-radius: 15px !important;
+  border: 1px solid rgba(176,199,234,.9) !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.98), rgba(237,246,255,.98)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.96),
+    0 12px 26px -22px rgba(42,92,170,.45) !important;
+}
+
+.hist-thumb img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  padding: 8px !important;
+}
+
+.hist-name {
+  color: var(--ody-navy) !important;
+  font-size: 1rem !important;
+  font-weight: 850 !important;
+  line-height: 1.28 !important;
+}
+
+.hist-row {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 14px !important;
+  min-height: 42px !important;
+  margin: 8px 0 !important;
+  padding: 9px 12px !important;
+  border: 1px solid rgba(205,218,238,.86) !important;
+  border-radius: 13px !important;
+  background: rgba(248,251,255,.86) !important;
+  color: #536282 !important;
+  font-size: .83rem !important;
+}
+
+.hist-row > span:first-child {
+  color: #536282 !important;
+  font-weight: 650 !important;
+}
+
+.hist-row .hist-value {
+  color: var(--ody-navy) !important;
+  font-weight: 900 !important;
+}
+
+.hist-row:has(.hist-profit) {
+  background: #F0FDF9 !important;
+  border-color: rgba(10,138,98,.18) !important;
+}
+
+.hist-row .hist-profit {
+  color: #0A8A62 !important;
+}
+
+.hist-time {
+  margin-top: 12px !important;
+  padding-top: 11px !important;
+  border-top: 1px solid rgba(205,218,238,.88) !important;
+  color: #7585A3 !important;
+}
+
+.hist-combined-card {
+  background: #FFFFFF !important;
+  border-color: rgba(205,218,238,.88) !important;
+}
+
+.hist-combined-meta {
+  color: #697995 !important;
 }
 
 .hist-empty {
@@ -9260,31 +9392,76 @@ function taskReferenceProductPreview() {
   };
 }
 
+function taskReferenceProtectedRects() {
+  const selectors = [
+    '#task-page .task-start-wrap',
+    '#task-page .progress-area',
+    '#task-page .stats-card',
+    '.history-fab'
+  ];
+  const margin = 74;
+  return selectors.map(function(selector) {
+    const node = document.querySelector(selector);
+    if (!node) return null;
+    const rect = node.getBoundingClientRect();
+    if (!rect.width || !rect.height) return null;
+    return {
+      left: rect.left - margin,
+      right: rect.right + margin,
+      top: rect.top - margin,
+      bottom: rect.bottom + margin
+    };
+  }).filter(Boolean);
+}
+
+function taskReferenceScanPointIsSafe(x, y, protectedRects) {
+  const vw = window.innerWidth || document.documentElement.clientWidth || 1;
+  const vh = window.innerHeight || document.documentElement.clientHeight || 1;
+  const px = vw * x / 100;
+  const py = vh * y / 100;
+  return !protectedRects.some(function(rect) {
+    return px >= rect.left && px <= rect.right && py >= rect.top && py <= rect.bottom;
+  });
+}
+
 function taskReferenceScanCoords(count) {
   const zones = [
-    { x1: 5,  x2: 20, y1: 18, y2: 38 },
-    { x1: 80, x2: 95, y1: 18, y2: 38 },
-    { x1: 4,  x2: 18, y1: 48, y2: 72 },
-    { x1: 82, x2: 96, y1: 48, y2: 72 },
-    { x1: 18, x2: 34, y1: 76, y2: 90 },
-    { x1: 66, x2: 82, y1: 76, y2: 90 }
+    { x1: 5,  x2: 17, y1: 17, y2: 38 },
+    { x1: 83, x2: 95, y1: 17, y2: 38 },
+    { x1: 4,  x2: 15, y1: 46, y2: 72 },
+    { x1: 85, x2: 96, y1: 46, y2: 72 },
+    { x1: 18, x2: 32, y1: 78, y2: 92 },
+    { x1: 68, x2: 82, y1: 78, y2: 92 },
+    { x1: 34, x2: 43, y1: 14, y2: 25 },
+    { x1: 57, x2: 66, y1: 14, y2: 25 }
   ];
+  const protectedRects = taskReferenceProtectedRects();
   const pts = [];
   let guard = 0;
-  while (pts.length < count && guard++ < 3000) {
+  while (pts.length < count && guard++ < 5000) {
     const zone = zones[pts.length % zones.length];
     const x = zone.x1 + Math.random() * (zone.x2 - zone.x1);
     const y = zone.y1 + Math.random() * (zone.y2 - zone.y1);
-    if (pts.every(function(p) { return Math.hypot(p.x - x, p.y - y) > 10; })) {
+    if (
+      taskReferenceScanPointIsSafe(x, y, protectedRects)
+      && pts.every(function(p) { return Math.hypot(p.x - x, p.y - y) > 10; })
+    ) {
       pts.push({ x: x, y: y });
     }
   }
   while (pts.length < count) {
-    const zone = zones[pts.length % zones.length];
-    pts.push({
-      x: zone.x1 + Math.random() * (zone.x2 - zone.x1),
-      y: zone.y1 + Math.random() * (zone.y2 - zone.y1)
-    });
+    let fallback = null;
+    for (let i = 0; i < 800 && !fallback; i++) {
+      const zone = zones[(pts.length + i) % zones.length];
+      const x = zone.x1 + Math.random() * (zone.x2 - zone.x1);
+      const y = zone.y1 + Math.random() * (zone.y2 - zone.y1);
+      if (taskReferenceScanPointIsSafe(x, y, protectedRects)) fallback = { x: x, y: y };
+    }
+    if (!fallback) {
+      const side = pts.length % 2 === 0 ? 7 : 93;
+      fallback = { x: side, y: 18 + ((pts.length * 13) % 70) };
+    }
+    pts.push(fallback);
   }
   return pts;
 }
@@ -11396,9 +11573,7 @@ function closeStatInfo() {
 }
 
 function statInfoOverlayClick(event) {
-  if (event && event.target === document.getElementById('stat-info-overlay')) {
-    closeStatInfo();
-  }
+  return;
 }
 
 
@@ -12301,9 +12476,8 @@ async function savePassword() {
     </div>
   </div>
 
-  <div class="stat-info-overlay" id="stat-info-overlay" onclick="statInfoOverlayClick(event)">
+  <div class="stat-info-overlay" id="stat-info-overlay">
     <div class="stat-info-card" role="dialog" aria-modal="true" aria-labelledby="stat-info-title">
-      <button class="stat-info-close" type="button" onclick="closeStatInfo()" aria-label="Close explanation">&#10005;</button>
       <div class="stat-info-mark" aria-hidden="true">
         <svg viewBox="0 0 24 24"><path d="M12 4.5c-4.5 0-8 3.1-8 7.1 0 2.2 1.1 4.2 2.9 5.5l-.6 2.4 2.7-1.4c.9.3 1.9.5 3 .5 4.5 0 8-3.1 8-7s-3.5-7.1-8-7.1Z"/><path d="M12 10.8v4.1"/><path d="M12 8.1h.01"/></svg>
       </div>
@@ -12352,7 +12526,7 @@ async function savePassword() {
           <div class="info-row"><span class="info-lbl">Product Price</span><span class="info-val gold" id="pd-price">0.00 USDT</span></div>
           <div class="info-row"><span class="info-lbl">Commission</span><span class="info-val" id="pd-comm">0.6%</span></div>
           <div class="info-row"><span class="info-lbl">Profits</span><span class="info-val green" id="pd-profit">0.00 USDT</span></div>
-          <div class="info-row"><span class="info-lbl">Total Refund</span><span class="info-val" id="pd-refund">0.00 USDT</span></div>
+          <div class="info-row"><span class="info-lbl">Total Rebate</span><span class="info-val" id="pd-refund">0.00 USDT</span></div>
           <div class="info-row"><span class="info-lbl">Creation Time</span><span class="info-val sm" id="pd-time">&mdash;</span></div>
           <div class="info-row"><span class="info-lbl">Commodity No.</span><span class="info-val sm" id="pd-id">&mdash;</span></div>
           <button class="submit-btn" id="submit-btn" onclick="submitTask()" disabled>Submit</button>
@@ -16735,10 +16909,12 @@ body.task-page-active > .history-fab svg {
   left: 0;
   right: 0;
   top: -5%;
-  height: 2px;
+  height: 5px;
   z-index: 3;
-  background: linear-gradient(90deg, transparent, rgba(96, 150, 225, .75) 28%, rgba(150, 188, 240, .95) 50%, rgba(96, 150, 225, .75) 72%, transparent);
-  box-shadow: 0 0 26px 5px rgba(120, 168, 232, .3);
+  background: linear-gradient(90deg, transparent, rgba(63, 111, 214, .88) 24%, rgba(157, 196, 255, 1) 50%, rgba(63, 111, 214, .88) 76%, transparent);
+  box-shadow:
+    0 0 20px 4px rgba(84, 138, 240, .34),
+    0 0 46px 9px rgba(84, 138, 240, .18);
 }
 
 #task-assign-scan .task-scan-laser::before,
@@ -16952,6 +17128,7 @@ body.task-page-active > .history-fab svg {
 
 #task-assign-scan .task-scan-laser {
   opacity: .58 !important;
+  height: 5px !important;
 }
 
 .task-scan-blip {
@@ -17175,11 +17352,13 @@ body.task-page-active > .history-fab svg {
 #prod-overlay .auto-btn {
   height: 36px !important;
   border-radius: 999px !important;
-  border: 1px solid rgba(255, 98, 0, .28) !important;
-  background: #FFF6EF !important;
-  color: #D95700 !important;
+  border: 1px solid rgba(84, 138, 240, .34) !important;
+  background: linear-gradient(180deg, #F7FAFF, #EAF2FF) !important;
+  color: #2A5CAA !important;
   font-weight: 800 !important;
-  box-shadow: none !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.95),
+    0 10px 22px -18px rgba(42,92,170,.55) !important;
 }
 
 #prod-overlay .prod-stat {
@@ -17237,11 +17416,11 @@ body.task-page-active > .history-fab svg {
   margin-top: 14px !important;
   min-height: 54px !important;
   border-radius: 999px !important;
-  background: linear-gradient(135deg, #FF6200, #F07B22) !important;
+  background: linear-gradient(135deg, #548AF0, #2A5CAA) !important;
   color: #FFFFFF !important;
   font-size: 15px !important;
   font-weight: 850 !important;
-  box-shadow: 0 18px 38px -22px rgba(255, 98, 0, .8) !important;
+  box-shadow: 0 18px 38px -22px rgba(42, 92, 170, .8) !important;
 }
 
 #prod-overlay .submit-btn:hover:not(:disabled) {
