@@ -9014,6 +9014,7 @@ function taskEaseInOutCubic(v) { return v < 0.5 ? 4*v*v*v : 1 - Math.pow(-2*v+2,
 function taskClamp(v, lo=0, hi=1) { return Math.min(hi, Math.max(lo, v)); }
 
 function setupTaskOrbiters() {
+  hydrateTaskOrbitLogos();
   const layer = document.getElementById('orbit-logo-layer') || document.getElementById('orbit-scene');
   if (!layer) return;
   taskOrbiterData = taskOrbitConfigs.map(function(c) {
@@ -9171,26 +9172,82 @@ function taskRefEscape(value) {
     .replace(/'/g, '&#39;');
 }
 
-function taskReferenceFallbackIcon(name) {
+const TASK_REFERENCE_PLATFORMS = [
+  { name: 'Amazon', domain: 'amazon.com', shortName: 'Amazon', logoUrl: 'https://api.iconify.design/simple-icons:amazon.svg' },
+  { name: 'eBay', domain: 'ebay.com', shortName: 'eBay', logoUrl: 'https://api.iconify.design/simple-icons:ebay.svg' },
+  { name: 'Walmart', domain: 'walmart.com', shortName: 'Walmart', logoUrl: 'https://api.iconify.design/simple-icons:walmart.svg' },
+  { name: 'Target', domain: 'target.com', shortName: 'Target', logoUrl: 'https://api.iconify.design/simple-icons:target.svg' },
+  { name: 'Best Buy', domain: 'bestbuy.com', shortName: 'Best Buy', logoUrl: 'https://www.google.com/s2/favicons?domain=bestbuy.com&sz=128' },
+  { name: 'Wayfair', domain: 'wayfair.com', shortName: 'Wayfair', logoUrl: 'https://www.google.com/s2/favicons?domain=wayfair.com&sz=128' },
+  { name: 'Etsy', domain: 'etsy.com', shortName: 'Etsy', logoUrl: 'https://api.iconify.design/simple-icons:etsy.svg' },
+  { name: 'Home Depot', domain: 'homedepot.com', shortName: 'Home Depot', logoUrl: 'https://www.google.com/s2/favicons?domain=homedepot.com&sz=128' },
+  { name: 'Costco', domain: 'costco.com', shortName: 'Costco', logoUrl: 'https://www.google.com/s2/favicons?domain=costco.com&sz=128' },
+  { name: 'Newegg', domain: 'newegg.com', shortName: 'Newegg', logoUrl: 'https://api.iconify.design/simple-icons:newegg.svg' }
+];
+
+function taskReferencePlatformMeta(name) {
+  const key = String(name || '').trim().toLowerCase();
+  return TASK_REFERENCE_PLATFORMS.find(function(platform) {
+    return platform.name.toLowerCase() === key || platform.shortName.toLowerCase() === key;
+  }) || null;
+}
+
+function taskReferenceLogoUrl(platform) {
+  return platform.logoUrl || ('https://www.google.com/s2/favicons?domain=' + encodeURIComponent(platform.domain) + '&sz=128');
+}
+
+function createTaskReferencePlatformIcon(platform) {
+  const meta = typeof platform === 'string'
+    ? (taskReferencePlatformMeta(platform) || { name: platform, shortName: platform, domain: 'amazon.com' })
+    : platform;
   const icon = document.createElement('span');
-  icon.className = 'market-icon mi-amazon';
-  const word = document.createElement('b');
-  word.textContent = name || 'amazon';
-  icon.appendChild(word);
+  icon.className = 'market-icon real-market-icon';
+  icon.setAttribute('data-platform', meta.name || meta.shortName || 'Platform');
+
+  if (meta.domain) {
+    const img = document.createElement('img');
+    img.src = taskReferenceLogoUrl(meta);
+    img.alt = (meta.name || meta.shortName || 'Platform') + ' logo';
+    img.loading = 'lazy';
+    img.decoding = 'async';
+    img.referrerPolicy = 'no-referrer';
+    img.onerror = function() {
+      icon.classList.add('logo-failed');
+      img.remove();
+      const fallback = document.createElement('b');
+      fallback.textContent = meta.shortName || meta.name || 'Store';
+      icon.appendChild(fallback);
+    };
+    icon.appendChild(img);
+  } else {
+    const fallback = document.createElement('b');
+    fallback.textContent = meta.shortName || meta.name || 'Store';
+    icon.appendChild(fallback);
+  }
   return icon;
 }
 
+function hydrateTaskOrbitLogos() {
+  document.querySelectorAll('#orbit-logo-layer .orbit-logo').forEach(function(node) {
+    const name = node.getAttribute('aria-label') || node.getAttribute('data-platform') || '';
+    const meta = taskReferencePlatformMeta(name);
+    const planet = node.querySelector('.planet');
+    if (!planet || !meta || planet.dataset.logoHydrated === 'true') return;
+    planet.textContent = '';
+    planet.appendChild(createTaskReferencePlatformIcon(meta));
+    planet.dataset.logoHydrated = 'true';
+  });
+}
+
+function taskReferenceFallbackIcon(name) {
+  return createTaskReferencePlatformIcon(name || 'Amazon');
+}
+
 function getTaskReferencePlatforms() {
-  const nodes = Array.from(document.querySelectorAll('#orbit-logo-layer .orbit-logo'));
-  const platforms = nodes.map(function(node) {
-    const icon = node.querySelector('.market-icon');
-    const name = node.getAttribute('aria-label') || (icon ? icon.textContent : 'Platform');
-    return {
-      name: name.trim() || 'Platform',
-      icon: icon ? icon.cloneNode(true) : taskReferenceFallbackIcon(name)
-    };
-  }).filter(function(item) { return !!item.icon; });
-  return platforms.length ? platforms : [{ name: 'Amazon', icon: taskReferenceFallbackIcon('amazon') }];
+  hydrateTaskOrbitLogos();
+  return TASK_REFERENCE_PLATFORMS.map(function(platform) {
+    return Object.assign({}, platform);
+  });
 }
 
 function taskReferenceProductPreview() {
@@ -9204,17 +9261,30 @@ function taskReferenceProductPreview() {
 }
 
 function taskReferenceScanCoords(count) {
+  const zones = [
+    { x1: 5,  x2: 20, y1: 18, y2: 38 },
+    { x1: 80, x2: 95, y1: 18, y2: 38 },
+    { x1: 4,  x2: 18, y1: 48, y2: 72 },
+    { x1: 82, x2: 96, y1: 48, y2: 72 },
+    { x1: 18, x2: 34, y1: 76, y2: 90 },
+    { x1: 66, x2: 82, y1: 76, y2: 90 }
+  ];
   const pts = [];
   let guard = 0;
   while (pts.length < count && guard++ < 3000) {
-    const x = 10 + Math.random() * 80;
-    const y = 14 + Math.random() * 50;
-    if (pts.every(function(p) { return Math.hypot(p.x - x, p.y - y) > 14; })) {
+    const zone = zones[pts.length % zones.length];
+    const x = zone.x1 + Math.random() * (zone.x2 - zone.x1);
+    const y = zone.y1 + Math.random() * (zone.y2 - zone.y1);
+    if (pts.every(function(p) { return Math.hypot(p.x - x, p.y - y) > 10; })) {
       pts.push({ x: x, y: y });
     }
   }
   while (pts.length < count) {
-    pts.push({ x: 10 + Math.random() * 80, y: 14 + Math.random() * 50 });
+    const zone = zones[pts.length % zones.length];
+    pts.push({
+      x: zone.x1 + Math.random() * (zone.x2 - zone.x1),
+      y: zone.y1 + Math.random() * (zone.y2 - zone.y1)
+    });
   }
   return pts;
 }
@@ -9261,7 +9331,7 @@ async function runTaskReferenceAssignAnimation(onComplete) {
     blip.className = 'task-scan-blip';
     blip.style.left = c.x + '%';
     blip.style.top = c.y + '%';
-    blip.appendChild(platform.icon.cloneNode(true));
+    blip.appendChild(createTaskReferencePlatformIcon(platform));
     const reticle = document.createElement('div');
     reticle.className = 'reticle';
     blip.appendChild(reticle);
@@ -9310,7 +9380,8 @@ async function runTaskReferenceAssignAnimation(onComplete) {
 
   const front = document.createElement('div');
   front.className = 'face front';
-  front.appendChild(chosen.platform.icon.cloneNode(true));
+  front.setAttribute('data-platform-name', chosen.platform.name || 'Platform');
+  front.appendChild(createTaskReferencePlatformIcon(chosen.platform));
   const shineFront = document.createElement('div');
   shineFront.className = 'shine';
   front.appendChild(shineFront);
@@ -12111,16 +12182,16 @@ async function savePassword() {
     </div>
     <div class="launch-column"></div>
     <div id="orbit-logo-layer">
-    <div class="orbit-logo tl-o1" aria-label="Amazon"><div class="planet pl-1"><span class="market-icon mi-amazon"><b>amazon</b></span></div></div>
-    <div class="orbit-logo tl-o2" aria-label="eBay"><div class="planet pl-2"><span class="market-icon mi-ebay"><b><i>e</i><i>b</i><i>a</i><i>y</i></b></span></div></div>
-    <div class="orbit-logo tl-o3" aria-label="Walmart"><div class="planet pl-3"><span class="market-icon mi-walmart"><b>Walmart</b><small>Marketplace</small></span></div></div>
-    <div class="orbit-logo tl-o4" aria-label="Target"><div class="planet pl-4"><span class="market-icon mi-target"><b>Target</b></span></div></div>
-    <div class="orbit-logo tl-o5" aria-label="Best Buy"><div class="planet pl-5"><span class="market-icon mi-bestbuy"><b>BestBuy</b></span></div></div>
-    <div class="orbit-logo tl-o6" aria-label="Wayfair"><div class="planet pl-6"><span class="market-icon mi-wayfair"><b>Wayfair</b></span></div></div>
-    <div class="orbit-logo tl-o7" aria-label="Etsy"><div class="planet pl-7"><span class="market-icon mi-etsy"><b>Etsy</b></span></div></div>
-    <div class="orbit-logo tl-o8" aria-label="Home Depot"><div class="planet pl-8"><span class="market-icon mi-homedepot"><b>Home</b><small>Depot</small></span></div></div>
-    <div class="orbit-logo tl-o9" aria-label="Costco"><div class="planet pl-9"><span class="market-icon mi-costco"><b>Costco</b></span></div></div>
-    <div class="orbit-logo tl-o10" aria-label="Newegg"><div class="planet pl-10"><span class="market-icon mi-newegg"><b>Newegg</b></span></div></div>
+    <div class="orbit-logo tl-o1" aria-label="Amazon"><div class="planet pl-1"></div></div>
+    <div class="orbit-logo tl-o2" aria-label="eBay"><div class="planet pl-2"></div></div>
+    <div class="orbit-logo tl-o3" aria-label="Walmart"><div class="planet pl-3"></div></div>
+    <div class="orbit-logo tl-o4" aria-label="Target"><div class="planet pl-4"></div></div>
+    <div class="orbit-logo tl-o5" aria-label="Best Buy"><div class="planet pl-5"></div></div>
+    <div class="orbit-logo tl-o6" aria-label="Wayfair"><div class="planet pl-6"></div></div>
+    <div class="orbit-logo tl-o7" aria-label="Etsy"><div class="planet pl-7"></div></div>
+    <div class="orbit-logo tl-o8" aria-label="Home Depot"><div class="planet pl-8"></div></div>
+    <div class="orbit-logo tl-o9" aria-label="Costco"><div class="planet pl-9"></div></div>
+    <div class="orbit-logo tl-o10" aria-label="Newegg"><div class="planet pl-10"></div></div>
     </div>
 
     <div class="task-start-wrap">
@@ -16864,6 +16935,361 @@ body.task-page-active > .history-fab svg {
 .task-scan-morph.shimmer .shine {
   transition: background-position .85s ease;
   background-position: -65% 0;
+}
+
+#task-page .task-start-wrap,
+#task-page .progress-area,
+#task-page .stats-card {
+  position: relative !important;
+  z-index: 95 !important;
+}
+
+#task-assign-scan {
+  z-index: 8 !important;
+}
+
+#task-assign-scan .task-scan-laser {
+  opacity: .58 !important;
+}
+
+.task-scan-blip {
+  width: 72px !important;
+  height: 72px !important;
+  display: grid !important;
+  place-items: center !important;
+  opacity: .08 !important;
+}
+
+.task-scan-blip.on {
+  opacity: .5 !important;
+}
+
+.task-scan-blip.lock {
+  z-index: 12 !important;
+  opacity: .9 !important;
+}
+
+.task-scan-hud {
+  z-index: 60 !important;
+}
+
+.task-scan-morph {
+  z-index: 70 !important;
+}
+
+.market-icon.real-market-icon {
+  position: absolute !important;
+  inset: -3px !important;
+  display: grid !important;
+  place-items: center !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(176, 199, 234, .82) !important;
+  background:
+    radial-gradient(circle at 26% 20%, rgba(255,255,255,.9), transparent 0 22%, transparent 40%),
+    linear-gradient(145deg, rgba(255,255,255,.98), rgba(241,247,255,.96)) !important;
+  padding: 8px !important;
+  color: #17213d !important;
+  box-shadow:
+    0 16px 34px -24px rgba(31, 71, 142, .58),
+    inset 0 1px 0 rgba(255,255,255,.96) !important;
+  overflow: hidden !important;
+  backdrop-filter: none !important;
+}
+
+.market-icon.real-market-icon::before,
+.market-icon.real-market-icon::after {
+  display: none !important;
+}
+
+.market-icon.real-market-icon img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  filter: saturate(1.03) contrast(1.02) !important;
+}
+
+.market-icon.real-market-icon.logo-failed b {
+  position: relative !important;
+  z-index: 1 !important;
+  display: block !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #153867 !important;
+  font-size: 11px !important;
+  font-weight: 850 !important;
+  line-height: 1.05 !important;
+  text-align: center !important;
+}
+
+.task-scan-blip .market-icon.real-market-icon,
+.task-scan-morph .front .market-icon.real-market-icon {
+  position: relative !important;
+  inset: auto !important;
+}
+
+.task-scan-blip .market-icon.real-market-icon {
+  width: 64px !important;
+  height: 64px !important;
+}
+
+.task-scan-blip.lock .market-icon.real-market-icon {
+  box-shadow:
+    0 0 0 3px rgba(84, 138, 240, .24),
+    0 18px 42px -16px rgba(84, 138, 240, .52),
+    inset 0 1px 0 rgba(255,255,255,.96) !important;
+}
+
+.task-scan-morph .front {
+  gap: 12px !important;
+  border: 1px solid rgba(176, 199, 234, .86) !important;
+  background:
+    radial-gradient(circle at 22% 16%, rgba(84,138,240,.16), transparent 0 32%, transparent 48%),
+    linear-gradient(145deg, #FFFFFF 0%, #F2F7FF 100%) !important;
+}
+
+.task-scan-morph .front::after {
+  content: attr(data-platform-name);
+  color: #18224a;
+  font-size: 13px;
+  font-weight: 850;
+  line-height: 1;
+  text-align: center;
+}
+
+.task-scan-morph .front .market-icon.real-market-icon {
+  width: 96px !important;
+  height: 96px !important;
+  border-radius: 22px !important;
+  padding: 14px !important;
+}
+
+#prod-overlay.open {
+  background:
+    radial-gradient(circle at 50% 38%, rgba(84,138,240,.14), transparent 0 38%, transparent 58%),
+    rgba(25, 31, 48, .46) !important;
+  backdrop-filter: blur(12px) saturate(.96) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(.96) !important;
+}
+
+#prod-overlay .prod-modal {
+  width: min(640px, calc(100vw - 36px)) !important;
+  max-height: calc(100dvh - 8.5rem) !important;
+  padding: 22px !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(186, 206, 236, .86) !important;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(84,138,240,.10), transparent 0 28%, transparent 44%),
+    linear-gradient(180deg, #FFFFFF 0%, #F7FAFF 100%) !important;
+  color: #121936 !important;
+  box-shadow: 0 34px 78px -42px rgba(26, 54, 108, .65) !important;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(94, 128, 184, .42) transparent;
+}
+
+#prod-overlay .prod-grid {
+  grid-template-columns: minmax(0, 1.02fr) minmax(260px, .98fr) !important;
+  gap: 24px !important;
+  align-items: stretch !important;
+}
+
+#prod-overlay .prod-close {
+  top: 10px !important;
+  right: 10px !important;
+  width: 34px !important;
+  height: 34px !important;
+  border: 1px solid rgba(186, 206, 236, .9) !important;
+  background: #F8FBFF !important;
+  color: #2A375C !important;
+  box-shadow: 0 12px 28px -20px rgba(31, 71, 142, .5) !important;
+}
+
+#prod-overlay .prod-img-wrap {
+  min-height: 166px !important;
+  height: 166px !important;
+  margin-bottom: 16px !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(186, 206, 236, .86) !important;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.98), rgba(238,246,255,.98)) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.95) !important;
+}
+
+#prod-overlay .prod-img-wrap img {
+  max-width: 100% !important;
+  max-height: 140px !important;
+  border-radius: 10px !important;
+  object-fit: contain !important;
+}
+
+#prod-overlay .prod-img-placeholder {
+  color: #8EA0BD !important;
+  opacity: 1 !important;
+  filter: drop-shadow(0 10px 16px rgba(84, 138, 240, .12)) !important;
+}
+
+#prod-overlay .prod-name {
+  color: #121936 !important;
+  font-size: 14px !important;
+  font-weight: 850 !important;
+  line-height: 1.35 !important;
+  margin-bottom: 14px !important;
+}
+
+#prod-overlay .star-hint,
+#prod-overlay .prod-stat-l,
+#prod-overlay .info-lbl {
+  color: #536282 !important;
+}
+
+#prod-overlay .star-hint {
+  font-size: 12px !important;
+  font-weight: 650 !important;
+}
+
+#prod-overlay .review-ta {
+  min-height: 90px !important;
+  border: 1px solid rgba(186, 206, 236, .9) !important;
+  border-radius: 12px !important;
+  background: #FFFFFF !important;
+  color: #17213D !important;
+  font-size: 14px !important;
+  line-height: 1.35 !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.95) !important;
+}
+
+#prod-overlay .review-ta::placeholder {
+  color: #667592 !important;
+}
+
+#prod-overlay .review-ta:focus {
+  border-color: rgba(84, 138, 240, .9) !important;
+  box-shadow: 0 0 0 3px rgba(84, 138, 240, .14) !important;
+}
+
+#prod-overlay .auto-btn {
+  height: 36px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(255, 98, 0, .28) !important;
+  background: #FFF6EF !important;
+  color: #D95700 !important;
+  font-weight: 800 !important;
+  box-shadow: none !important;
+}
+
+#prod-overlay .prod-stat {
+  min-height: 72px !important;
+  padding: 12px 8px !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(186, 206, 236, .86) !important;
+  background: linear-gradient(180deg, #FFFFFF, #F3F8FF) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.96) !important;
+}
+
+#prod-overlay .prod-stat-v {
+  color: #173B78 !important;
+  font-size: 15px !important;
+  font-weight: 900 !important;
+}
+
+#prod-overlay .prod-stat-l {
+  font-size: 11px !important;
+  font-weight: 650 !important;
+}
+
+#prod-overlay .info-row {
+  min-height: 36px !important;
+  margin-bottom: 6px !important;
+  padding: 8px 11px !important;
+  border: 1px solid rgba(205, 218, 238, .88) !important;
+  border-radius: 9px !important;
+  background: rgba(248, 251, 255, .9) !important;
+  font-size: 13px !important;
+}
+
+#prod-overlay .info-row:last-of-type {
+  border: 1px solid rgba(205, 218, 238, .88) !important;
+}
+
+#prod-overlay .info-val {
+  color: #121936 !important;
+  font-weight: 850 !important;
+}
+
+#prod-overlay .info-val.gold {
+  color: #2E64C8 !important;
+}
+
+#prod-overlay .info-val.green {
+  color: #0A8A62 !important;
+}
+
+#prod-overlay .info-val.sm {
+  font-size: 12px !important;
+}
+
+#prod-overlay .submit-btn {
+  margin-top: 14px !important;
+  min-height: 54px !important;
+  border-radius: 999px !important;
+  background: linear-gradient(135deg, #FF6200, #F07B22) !important;
+  color: #FFFFFF !important;
+  font-size: 15px !important;
+  font-weight: 850 !important;
+  box-shadow: 0 18px 38px -22px rgba(255, 98, 0, .8) !important;
+}
+
+#prod-overlay .submit-btn:hover:not(:disabled) {
+  opacity: 1 !important;
+  transform: translateY(-2px) !important;
+}
+
+#prod-overlay .submit-btn:disabled {
+  opacity: .44 !important;
+  color: rgba(255,255,255,.92) !important;
+}
+
+@media (max-width: 700px) {
+  #prod-overlay .prod-modal {
+    width: min(380px, calc(100vw - 28px)) !important;
+    max-height: calc(100dvh - 8rem) !important;
+    padding: 16px !important;
+    padding-top: 42px !important;
+    border-radius: 14px !important;
+  }
+
+  #prod-overlay .prod-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  #prod-overlay .prod-img-wrap {
+    height: 118px !important;
+    min-height: 118px !important;
+    margin-bottom: 10px !important;
+  }
+
+  #prod-overlay .prod-stats-row {
+    gap: 8px !important;
+    margin-bottom: 10px !important;
+  }
+
+  #prod-overlay .prod-stat {
+    min-height: 58px !important;
+    padding: 9px 6px !important;
+  }
+
+  #prod-overlay .review-ta {
+    min-height: 68px !important;
+    height: 68px !important;
+  }
+
+  #prod-overlay .submit-btn {
+    min-height: 50px !important;
+  }
 }
 
 @keyframes taskRefFadeIn {
