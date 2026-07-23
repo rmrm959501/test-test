@@ -9157,29 +9157,277 @@ function createTaskLaunchParticles(scene, amount) {
   }
 }
 
+function taskRefWait(ms) {
+  return new Promise(function(resolve) { setTimeout(resolve, ms); });
+}
+
+function taskRefEscape(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function taskReferenceFallbackIcon(name) {
+  const icon = document.createElement('span');
+  icon.className = 'market-icon mi-amazon';
+  const word = document.createElement('b');
+  word.textContent = name || 'amazon';
+  icon.appendChild(word);
+  return icon;
+}
+
+function getTaskReferencePlatforms() {
+  const nodes = Array.from(document.querySelectorAll('#orbit-logo-layer .orbit-logo'));
+  const platforms = nodes.map(function(node) {
+    const icon = node.querySelector('.market-icon');
+    const name = node.getAttribute('aria-label') || (icon ? icon.textContent : 'Platform');
+    return {
+      name: name.trim() || 'Platform',
+      icon: icon ? icon.cloneNode(true) : taskReferenceFallbackIcon(name)
+    };
+  }).filter(function(item) { return !!item.icon; });
+  return platforms.length ? platforms : [{ name: 'Amazon', icon: taskReferenceFallbackIcon('amazon') }];
+}
+
+function taskReferenceProductPreview() {
+  const store = window._TS || {};
+  const product = store.cur || {};
+  return {
+    name: product.name || 'Assigned Product',
+    imageUrl: product.imageUrl || '',
+    em: '\uD83D\uDCE6'
+  };
+}
+
+function taskReferenceScanCoords(count) {
+  const pts = [];
+  let guard = 0;
+  while (pts.length < count && guard++ < 3000) {
+    const x = 10 + Math.random() * 80;
+    const y = 14 + Math.random() * 50;
+    if (pts.every(function(p) { return Math.hypot(p.x - x, p.y - y) > 14; })) {
+      pts.push({ x: x, y: y });
+    }
+  }
+  while (pts.length < count) {
+    pts.push({ x: 10 + Math.random() * 80, y: 14 + Math.random() * 50 });
+  }
+  return pts;
+}
+
+async function runTaskReferenceAssignAnimation(onComplete) {
+  const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reducedMotion) {
+    if (onComplete) await Promise.resolve(onComplete());
+    return;
+  }
+
+  const existing = document.getElementById('task-assign-scan');
+  if (existing) existing.remove();
+  document.querySelectorAll('.task-scan-hud,.task-scan-morph').forEach(function(el) { el.remove(); });
+
+  document.body.classList.add('task-reference-scanning');
+  const platforms = getTaskReferencePlatforms();
+  const chosenPlatform = platforms[Math.floor(Math.random() * platforms.length)] || platforms[0];
+  const product = taskReferenceProductPreview();
+
+  const layer = document.createElement('div');
+  layer.id = 'task-assign-scan';
+  layer.innerHTML = '<div class="task-scan-laser" id="taskScanLaser"></div>';
+  document.body.appendChild(layer);
+
+  const hud = document.createElement('div');
+  hud.className = 'task-scan-hud';
+  document.body.appendChild(hud);
+
+  const setHud = function(lines) {
+    hud.innerHTML = lines.map(function(line, index) {
+      return '<div class="ln"><span class="k">&gt;</span> ' + line + (index === lines.length - 1 ? '<span class="cursor"></span>' : '') + '</div>';
+    }).join('');
+  };
+
+  const laser = layer.querySelector('#taskScanLaser');
+  const coords = taskReferenceScanCoords(platforms.length);
+  const duration = 1900;
+
+  setHud(['INITIALIZING SCANNER...', 'SWEEPING E-COMMERCE NETWORK']);
+  const blips = platforms.map(function(platform, index) {
+    const c = coords[index];
+    const blip = document.createElement('div');
+    blip.className = 'task-scan-blip';
+    blip.style.left = c.x + '%';
+    blip.style.top = c.y + '%';
+    blip.appendChild(platform.icon.cloneNode(true));
+    const reticle = document.createElement('div');
+    reticle.className = 'reticle';
+    blip.appendChild(reticle);
+    layer.appendChild(blip);
+    return { platform: platform, el: blip, y: c.y };
+  });
+
+  await taskRefWait(60);
+  laser.style.transition = 'top ' + duration + 'ms linear';
+  laser.style.top = '105%';
+  blips.forEach(function(blip) {
+    setTimeout(function() { blip.el.classList.add('on'); }, ((blip.y + 5) / 110) * duration);
+  });
+  await taskRefWait(duration + 200);
+
+  setHud(['NETWORK MAPPED :: ' + platforms.length + ' NODES DETECTED', 'LOCKING TARGET PLATFORM...']);
+  const chosen = blips.find(function(blip) { return blip.platform.name === chosenPlatform.name; }) || blips[0];
+  laser.style.transition = 'top .55s ease';
+  laser.style.top = chosen.y + '%';
+  blips.forEach(function(blip) {
+    if (blip !== chosen) blip.el.classList.add('dim');
+  });
+  await taskRefWait(560);
+  chosen.el.classList.remove('dim');
+  chosen.el.classList.add('lock');
+  laser.style.opacity = '0';
+  setHud([
+    'PLATFORM LOCKED :: <b>' + taskRefEscape(chosen.platform.name.toUpperCase()) + '</b>',
+    'ASSIGNING PRODUCT...'
+  ]);
+  await taskRefWait(600);
+
+  blips.forEach(function(blip) {
+    if (blip !== chosen) {
+      blip.el.style.transition = 'opacity .4s, transform .4s';
+      blip.el.style.opacity = '0';
+      blip.el.style.transform = 'translate(-50%, -50%) scale(.5)';
+    }
+  });
+  await taskRefWait(220);
+
+  const rect = chosen.el.getBoundingClientRect();
+  chosen.el.style.visibility = 'hidden';
+  const morph = document.createElement('div');
+  morph.className = 'task-scan-morph';
+
+  const front = document.createElement('div');
+  front.className = 'face front';
+  front.appendChild(chosen.platform.icon.cloneNode(true));
+  const shineFront = document.createElement('div');
+  shineFront.className = 'shine';
+  front.appendChild(shineFront);
+
+  const back = document.createElement('div');
+  back.className = 'face back';
+  if (product.imageUrl) {
+    const img = document.createElement('img');
+    img.src = product.imageUrl;
+    img.alt = product.name;
+    img.onerror = function() {
+      this.replaceWith(document.createTextNode(product.em));
+    };
+    back.appendChild(img);
+  } else {
+    const em = document.createElement('span');
+    em.className = 'em';
+    em.textContent = product.em;
+    back.appendChild(em);
+  }
+  const name = document.createElement('span');
+  name.className = 'nm';
+  name.textContent = product.name;
+  back.appendChild(name);
+
+  morph.appendChild(front);
+  morph.appendChild(back);
+  document.body.appendChild(morph);
+  morph.style.left = (rect.left + rect.width / 2) + 'px';
+  morph.style.top = (rect.top + rect.height / 2) + 'px';
+  morph.style.width = rect.width + 'px';
+  morph.style.height = rect.height + 'px';
+  morph.style.borderRadius = '50%';
+  await taskRefWait(40);
+
+  morph.style.left = (window.innerWidth / 2) + 'px';
+  morph.style.top = (window.innerHeight * 0.44) + 'px';
+  morph.style.width = '170px';
+  morph.style.height = '170px';
+  morph.style.borderRadius = '26px';
+  await taskRefWait(660);
+
+  morph.classList.add('shimmer');
+  await taskRefWait(520);
+  morph.classList.add('flip');
+  await taskRefWait(640);
+  setHud([
+    'PRODUCT ASSIGNED :: <b>' + taskRefEscape(product.name.toUpperCase()) + '</b>',
+    'SOURCE :: <b>' + taskRefEscape(chosen.platform.name.toUpperCase()) + '</b>'
+  ]);
+  await taskRefWait(560);
+
+  morph.style.width = '430px';
+  morph.style.height = '300px';
+  morph.style.borderRadius = '24px';
+  await taskRefWait(380);
+
+  if (onComplete) await Promise.resolve(onComplete());
+
+  await taskRefWait(140);
+  hud.style.transition = 'opacity .3s';
+  layer.style.transition = 'opacity .3s';
+  morph.style.transition = 'opacity .25s ease';
+  hud.style.opacity = '0';
+  layer.style.opacity = '0';
+  morph.style.opacity = '0';
+  await taskRefWait(160);
+  morph.remove();
+  chosen.el.remove();
+  layer.remove();
+  hud.remove();
+  document.body.classList.remove('task-reference-scanning');
+}
+
 function runTaskOrbitConvergence(onComplete) {
   if (taskOrbitGathering) return;
   const scene = document.getElementById('orbit-scene');
   const planet = document.getElementById('start-planet');
   const label = planet ? planet.querySelector('.start-planet-label') : null;
+  const status = document.getElementById('start-planet-status');
   if (!scene) { if (onComplete) onComplete(); return; }
 
   taskOrbitGathering = true;
-  taskOnComplete = onComplete;
+  taskOnComplete = null;
   taskProductShown = false;
-  taskLaunchStart = performance.now();
-
+  taskLaunchStart = 0;
   scene.classList.add('is-assigning');
-  createTaskLaunchParticles(scene, 96);
 
   if (label) {
-    label.dataset.original = label.innerHTML;
-    label.innerHTML = 'ASSIGNING<br>PRODUCT';
+    label.dataset.original = label.innerHTML || 'START PROJECT';
+    label.innerHTML = 'ASSIGNING PRODUCT';
+  }
+  if (status) {
+    status.dataset.original = status.textContent || 'READY TO ASSIGN';
+    status.textContent = 'ASSIGNING PRODUCT';
   }
 
-  // Trigger aura animation reset
-  const aura = scene.querySelector('.launch-aura');
-  if (aura) { aura.style.animation = 'none'; aura.offsetHeight; aura.style.animation = ''; }
+  runTaskReferenceAssignAnimation(onComplete)
+    .catch(function(error) {
+      console.error(error);
+      if (typeof showToast === 'function') {
+        showToast((error && error.message) || 'Unable to assign this product.', 'error', 4500);
+      }
+    })
+    .finally(function() {
+      taskLaunchStart = 0;
+      taskProductShown = false;
+      taskOrbitGathering = false;
+      scene.classList.remove('is-assigning');
+      if (label && label.dataset.original) label.innerHTML = label.dataset.original;
+      if (status && status.dataset.original && status.textContent === 'ASSIGNING PRODUCT') {
+        status.textContent = status.dataset.original;
+      }
+      document.body.classList.remove('task-reference-scanning');
+      const leftover = document.getElementById('task-assign-scan');
+      if (leftover) leftover.remove();
+      document.querySelectorAll('.task-scan-hud,.task-scan-morph').forEach(function(el) { el.remove(); });
+    });
 }
 
 /* ======================================================
@@ -11840,6 +12088,9 @@ async function savePassword() {
 
   <!-- Task canvas background -->
   <canvas id="canvas-bg" style="position:fixed;inset:0;z-index:0;pointer-events:none;"></canvas>
+  <div class="task-reference-bg-layer" aria-hidden="true">
+    <div class="task-reference-bg-blobs"></div>
+  </div>
 
   <!-- Orbit scene from task.html -->
   <div class="orbit-scene" id="orbit-scene">
@@ -11866,10 +12117,13 @@ async function savePassword() {
     <div class="orbit-logo tl-o10" aria-label="Newegg"><div class="planet pl-10"><span class="market-icon mi-newegg"><b>Newegg</b></span></div></div>
     </div>
 
-    <button type="button" class="start-planet" id="start-planet" aria-label="Start Project" onclick="startTask()">
-      <span class="start-planet-status" id="start-planet-status">READY TO ASSIGN</span>
-      <span class="start-planet-label">START<br>PROJECT</span>
-    </button>
+    <div class="task-start-wrap">
+      <button type="button" class="start-planet start-btn" id="start-planet" aria-label="Start Project" onclick="startTask()">
+        <span class="sb-ic" aria-hidden="true">&#9654;</span>
+        <span class="start-planet-label sb-tx">START PROJECT</span>
+      </button>
+      <div class="start-planet-status assign-pill" id="start-planet-status">READY TO ASSIGN</div>
+    </div>
     <div class="launch-aura" aria-hidden="true"><i></i><i></i><i></i></div>
 
     <div class="progress-area">
@@ -11983,7 +12237,12 @@ async function savePassword() {
   </div>
 
   <!-- History FAB -->
-  <div class="history-fab" onclick="openHistory()" title="History"><span>&#9636;</span><span>History</span></div>
+  <div class="history-fab" onclick="openHistory()" title="History">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5 7h14M5 12h14M5 17h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <span>History</span>
+  </div>
 
   <!-- Product Modal -->
   <div class="prod-overlay" id="prod-overlay">
@@ -16048,6 +16307,484 @@ body.logged-in .iframe-section {
     padding-left: 14px !important;
     padding-right: 14px !important;
     font-size: 12px !important;
+  }
+}
+
+/* Odyssey task reference graft: background, launch CTA, history button, and assign scan. */
+#task-page.visible {
+  background: #f7f9ff !important;
+  color: #1f2a44 !important;
+}
+
+#task-page #canvas-bg {
+  display: none !important;
+}
+
+#task-page .task-reference-bg-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background: #f7f9ff;
+}
+
+#task-page .task-reference-bg-blobs {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(620px 520px at 16% 18%, rgba(120, 170, 255, .38), transparent 62%),
+    radial-gradient(560px 520px at 86% 26%, rgba(150, 230, 205, .32), transparent 62%),
+    radial-gradient(720px 620px at 62% 108%, rgba(180, 200, 255, .28), transparent 60%);
+  filter: blur(6px);
+}
+
+#task-page .orbit-scene {
+  position: relative !important;
+  z-index: 1 !important;
+  max-width: 1180px !important;
+  width: min(1180px, calc(100% - 32px)) !important;
+  min-height: calc(100vh - var(--ody-header-h, 88px) - var(--ody-ticker-h, 34px)) !important;
+  margin: 0 auto !important;
+  padding: 42px 24px 72px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  overflow: visible !important;
+  background: transparent !important;
+}
+
+#task-page .orbit-rings,
+#task-page #orbit-logo-layer,
+#task-page .launch-column,
+#task-page .launch-aura {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+#task-page .task-start-wrap {
+  position: relative !important;
+  z-index: 5 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 16px !important;
+  margin: 44px 0 24px !important;
+}
+
+#task-page .start-planet {
+  position: relative !important;
+  inset: auto !important;
+  width: auto !important;
+  height: 76px !important;
+  min-width: 276px !important;
+  padding: 0 48px !important;
+  border: none !important;
+  border-radius: 18px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 13px !important;
+  cursor: pointer !important;
+  color: #fff !important;
+  background: linear-gradient(135deg, #5b8def, #3f6fd6) !important;
+  box-shadow: 0 20px 42px -16px rgba(63, 111, 214, .7) !important;
+  transform: none !important;
+  transition: transform .18s ease, box-shadow .18s ease, background .3s !important;
+}
+
+#task-page .start-planet::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: -8px !important;
+  border-radius: 24px !important;
+  border: 1px solid rgba(99, 140, 225, .4) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  pointer-events: none !important;
+  animation: taskReferenceHalo 3.2s ease-in-out infinite !important;
+}
+
+#task-page .start-planet::after {
+  display: none !important;
+}
+
+@keyframes taskReferenceHalo {
+  0%, 100% { transform: scale(1); opacity: .6; }
+  50% { transform: scale(1.04); opacity: .2; }
+}
+
+#task-page .start-planet:hover:not(:disabled) {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 24px 48px -16px rgba(63, 111, 214, .78) !important;
+}
+
+#task-page .start-planet:active:not(:disabled) {
+  transform: translateY(0) scale(.98) !important;
+}
+
+#task-page .start-planet.disabled,
+#task-page .start-planet:disabled {
+  cursor: default !important;
+  filter: saturate(.72) brightness(.98) !important;
+}
+
+#task-page .start-planet .sb-ic {
+  position: static !important;
+  display: inline-flex !important;
+  font-size: 15px !important;
+  line-height: 1 !important;
+  color: #fff !important;
+}
+
+#task-page .start-planet-label {
+  position: static !important;
+  transform: none !important;
+  font-size: 19px !important;
+  line-height: 1 !important;
+  font-weight: 800 !important;
+  letter-spacing: 2px !important;
+  color: #fff !important;
+  text-align: center !important;
+  text-shadow: none !important;
+  white-space: nowrap !important;
+}
+
+#task-page .start-planet-status {
+  position: relative !important;
+  inset: auto !important;
+  transform: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 0 !important;
+  padding: 8px 20px !important;
+  border-radius: 20px !important;
+  border: 1px solid #eaf0fb !important;
+  background: #fff !important;
+  box-shadow: 0 18px 45px -20px rgba(46, 78, 150, .35) !important;
+  color: #3f6fd6 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+  letter-spacing: 1px !important;
+  text-shadow: none !important;
+  opacity: 1 !important;
+}
+
+#task-page .progress-area {
+  position: relative !important;
+  z-index: 4 !important;
+  max-width: 1130px !important;
+  width: 100% !important;
+  margin: 22px auto 0 !important;
+}
+
+#task-page.visible .history-fab,
+body.task-page-active > .history-fab {
+  position: fixed !important;
+  left: 26px !important;
+  right: auto !important;
+  bottom: 26px !important;
+  z-index: 11920 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 12px 18px !important;
+  border-radius: 14px !important;
+  border: 1px solid #eef2fb !important;
+  background: #fff !important;
+  color: #33507f !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+  box-shadow: 0 18px 45px -20px rgba(46, 78, 150, .35) !important;
+  cursor: pointer !important;
+  transform: none !important;
+}
+
+#task-page.visible .history-fab:hover,
+body.task-page-active > .history-fab:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 22px 50px -20px rgba(46, 78, 150, .42) !important;
+}
+
+#task-page.visible .history-fab svg,
+body.task-page-active > .history-fab svg {
+  width: 17px !important;
+  height: 17px !important;
+  color: #3f6fd6 !important;
+  flex: 0 0 17px !important;
+}
+
+#task-assign-scan {
+  position: fixed;
+  inset: 0;
+  z-index: 11900;
+  overflow: hidden;
+  pointer-events: none;
+  animation: taskRefFadeIn .25s ease;
+}
+
+#task-assign-scan .task-scan-laser {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -5%;
+  height: 2px;
+  z-index: 3;
+  background: linear-gradient(90deg, transparent, rgba(96, 150, 225, .75) 28%, rgba(150, 188, 240, .95) 50%, rgba(96, 150, 225, .75) 72%, transparent);
+  box-shadow: 0 0 26px 5px rgba(120, 168, 232, .3);
+}
+
+#task-assign-scan .task-scan-laser::before,
+#task-assign-scan .task-scan-laser::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 90px;
+  filter: blur(6px);
+}
+
+#task-assign-scan .task-scan-laser::before {
+  bottom: -90px;
+  background: linear-gradient(rgba(120, 168, 232, .12), rgba(120, 168, 232, 0));
+}
+
+#task-assign-scan .task-scan-laser::after {
+  top: -90px;
+  background: linear-gradient(rgba(120, 168, 232, 0), rgba(120, 168, 232, .12));
+}
+
+.task-scan-blip {
+  position: absolute;
+  z-index: 2;
+  opacity: .1;
+  transform: translate(-50%, -50%) scale(.55);
+  transition: .5s cubic-bezier(.3, 1, .4, 1);
+}
+
+.task-scan-blip.on {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.task-scan-blip.dim {
+  opacity: .14;
+  filter: grayscale(.6);
+}
+
+.task-scan-blip.lock {
+  z-index: 4;
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.32);
+}
+
+.task-scan-blip .market-icon {
+  width: 64px !important;
+  height: 64px !important;
+  font-size: 12px !important;
+}
+
+.task-scan-blip .reticle {
+  position: absolute;
+  inset: -16px;
+  border: 1px solid rgba(120, 168, 232, .45);
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(1.15);
+  transition: .45s cubic-bezier(.3, 1, .4, 1);
+}
+
+.task-scan-blip.lock .reticle {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.task-scan-blip.lock .market-icon {
+  box-shadow: 0 0 0 3px rgba(120, 168, 232, .32), 0 16px 44px -8px rgba(90, 140, 220, .5) !important;
+}
+
+.task-scan-hud {
+  position: fixed;
+  left: 50%;
+  bottom: 44px;
+  z-index: 11940;
+  min-width: 340px;
+  max-width: 90vw;
+  padding: 16px 22px;
+  border: 1px solid rgba(120, 168, 232, .35);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, .82);
+  color: #28466f;
+  box-shadow: 0 18px 44px -20px rgba(40, 70, 140, .4);
+  backdrop-filter: blur(10px);
+  font-family: Consolas, "SF Mono", monospace;
+  font-size: 13px;
+  line-height: 1.8;
+  transform: translateX(-50%);
+  animation: taskRefFadeIn .25s ease;
+}
+
+.task-scan-hud .ln {
+  white-space: pre-wrap;
+}
+
+.task-scan-hud .k {
+  color: #6b93d8;
+  font-weight: 700;
+}
+
+.task-scan-hud b {
+  color: #12335e;
+  font-weight: 800;
+}
+
+.task-scan-hud .cursor {
+  display: inline-block;
+  width: 7px;
+  height: 13px;
+  border-radius: 1px;
+  background: #6b93d8;
+  vertical-align: -2px;
+  animation: taskRefBlink 1.1s steps(1) infinite;
+}
+
+.task-scan-morph {
+  position: fixed;
+  z-index: 11955;
+  transform: translate(-50%, -50%);
+  transform-style: preserve-3d;
+  box-shadow: 0 26px 62px -20px rgba(40, 70, 140, .55);
+  transition:
+    left .66s cubic-bezier(.5, 0, .15, 1),
+    top .66s cubic-bezier(.5, 0, .15, 1),
+    width .66s cubic-bezier(.5, 0, .15, 1),
+    height .66s cubic-bezier(.5, 0, .15, 1),
+    border-radius .66s cubic-bezier(.5, 0, .15, 1),
+    transform .62s cubic-bezier(.5, 0, .15, 1);
+}
+
+.task-scan-morph .face {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  backface-visibility: hidden;
+  overflow: hidden;
+  font-weight: 800;
+}
+
+.task-scan-morph .front {
+  background: #fff;
+}
+
+.task-scan-morph .front .market-icon {
+  width: 82px !important;
+  height: 82px !important;
+}
+
+.task-scan-morph .back {
+  background: #fff;
+  transform: rotateY(180deg);
+}
+
+.task-scan-morph .back .em {
+  font-size: 46px;
+  line-height: 1;
+}
+
+.task-scan-morph .back img {
+  width: 86px;
+  height: 86px;
+  border-radius: 16px;
+  object-fit: cover;
+}
+
+.task-scan-morph .back .nm {
+  max-width: 88%;
+  color: #22314f;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.task-scan-morph.flip {
+  transform: translate(-50%, -50%) rotateY(180deg);
+}
+
+.task-scan-morph .shine {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 42%, rgba(255, 255, 255, .22) 47%, rgba(255, 255, 255, .72) 50%, rgba(255, 255, 255, .22) 53%, transparent 58%);
+  background-size: 260% 100%;
+  background-repeat: no-repeat;
+  background-position: 165% 0;
+}
+
+.task-scan-morph.shimmer .shine {
+  transition: background-position .85s ease;
+  background-position: -65% 0;
+}
+
+@keyframes taskRefFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes taskRefBlink {
+  50% { opacity: 0; }
+}
+
+@media (max-width: 700px) {
+  #task-page .orbit-scene {
+    width: calc(100% - 20px) !important;
+    padding: 26px 12px 74px !important;
+  }
+
+  #task-page .task-start-wrap {
+    margin-top: 34px !important;
+  }
+
+  #task-page .start-planet {
+    height: 64px !important;
+    min-width: 232px !important;
+    padding: 0 30px !important;
+    border-radius: 16px !important;
+  }
+
+  #task-page .start-planet-label {
+    font-size: 16px !important;
+  }
+
+  #task-page.visible .history-fab,
+  body.task-page-active > .history-fab {
+    left: 16px !important;
+    bottom: 18px !important;
+    padding: 11px 15px !important;
+  }
+
+  .task-scan-hud {
+    bottom: 26px;
+    min-width: 0;
+    width: calc(100vw - 36px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #task-page .start-planet::before,
+  .task-scan-hud .cursor {
+    animation: none !important;
   }
 }
 </style>
