@@ -9301,6 +9301,7 @@ async function runTaskReferenceAssignAnimation(onComplete) {
   document.querySelectorAll('.task-scan-hud,.task-scan-morph').forEach(function(el) { el.remove(); });
 
   document.body.classList.add('task-reference-scanning');
+  const animationRoot = document.getElementById('task-page') || document.body;
   const platforms = getTaskReferencePlatforms();
   const chosenPlatform = platforms[Math.floor(Math.random() * platforms.length)] || platforms[0];
   const product = taskReferenceProductPreview();
@@ -9308,11 +9309,11 @@ async function runTaskReferenceAssignAnimation(onComplete) {
   const layer = document.createElement('div');
   layer.id = 'task-assign-scan';
   layer.innerHTML = '<div class="task-scan-laser" id="taskScanLaser"></div>';
-  document.body.appendChild(layer);
+  animationRoot.appendChild(layer);
 
   const hud = document.createElement('div');
   hud.className = 'task-scan-hud';
-  document.body.appendChild(hud);
+  animationRoot.appendChild(hud);
 
   const setHud = function(lines) {
     hud.innerHTML = lines.map(function(line, index) {
@@ -9409,7 +9410,7 @@ async function runTaskReferenceAssignAnimation(onComplete) {
 
   morph.appendChild(front);
   morph.appendChild(back);
-  document.body.appendChild(morph);
+  animationRoot.appendChild(morph);
   morph.style.left = (rect.left + rect.width / 2) + 'px';
   morph.style.top = (rect.top + rect.height / 2) + 'px';
   morph.style.width = rect.width + 'px';
@@ -16393,6 +16394,7 @@ body.logged-in .iframe-section {
 #task-page.visible {
   background: #f4f7fd !important;
   color: #1f2a44 !important;
+  isolation: isolate;
 }
 
 #task-page #canvas-bg {
@@ -16945,7 +16947,7 @@ body.task-page-active > .history-fab svg {
 }
 
 #task-assign-scan {
-  z-index: 8 !important;
+  z-index: 18 !important;
 }
 
 #task-assign-scan .task-scan-laser {
@@ -16957,16 +16959,16 @@ body.task-page-active > .history-fab svg {
   height: 72px !important;
   display: grid !important;
   place-items: center !important;
-  opacity: .08 !important;
+  opacity: .16 !important;
 }
 
 .task-scan-blip.on {
-  opacity: .5 !important;
+  opacity: .72 !important;
 }
 
 .task-scan-blip.lock {
   z-index: 12 !important;
-  opacity: .9 !important;
+  opacity: 1 !important;
 }
 
 .task-scan-hud {
